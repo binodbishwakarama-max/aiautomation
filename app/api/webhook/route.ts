@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     const host = request.headers.get('host');
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
     
-    fetch(`${appUrl}/api/ai-reply`, {
+    await fetch(`${appUrl}/api/ai-reply`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
