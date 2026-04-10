@@ -12,6 +12,8 @@ export async function POST(request: Request) {
     if (!conversationId) {
       return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
     }
+    const result = await processAiReply(conversationId);
+    return NextResponse.json(result);
 
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Internal Server Error';

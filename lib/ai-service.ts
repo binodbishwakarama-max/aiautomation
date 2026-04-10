@@ -145,7 +145,8 @@ Respond in JSON format only:
 
     return { success: true, reply };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     console.error('AI Processing Error:', error);
     
     // Log error to messages so we can see it in the dashboard for debugging
@@ -153,7 +154,7 @@ Respond in JSON format only:
       await supabaseAdmin.from('messages').insert({
         conversation_id: conversationId,
         role: 'assistant',
-        content: `⚠️ AI Error: ${error.message || 'Unknown error'}`
+        content: `⚠️ AI Error: ${errorMsg}`
       });
     } catch (logErr) {
       console.error('Failed to log error to DB:', logErr);
