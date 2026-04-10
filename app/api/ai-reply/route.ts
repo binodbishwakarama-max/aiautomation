@@ -13,11 +13,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'conversationId required' }, { status: 400 });
     }
 
-    const result = await processAiReply(conversationId);
-    return NextResponse.json(result);
-
-  } catch (error: any) {
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Internal Server Error';
     console.error('AI Reply Route Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
 }

@@ -16,7 +16,7 @@ export async function processAiReply(conversationId: string) {
       throw new Error('Conversation not found');
     }
 
-    const { business_id, customer_phone, last_message: incoming_message } = conv;
+    const { business_id, customer_phone } = conv;
 
     // 2. Fetch business
     const { data: business } = await supabaseAdmin
