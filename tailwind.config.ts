@@ -9,9 +9,28 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "#0A0A0F",
+        surface: "#111118",
+        border: "#1E1E2E",
+        primary: {
+          DEFAULT: "#6EE7B7",
+          foreground: "#0A0A0F"
+        },
+        secondary: {
+          DEFAULT: "#818CF8",
+          foreground: "#FFFFFF"
+        },
+        textPrimary: "#F1F5F9",
+        textMuted: "#64748B",
       },
+      borderRadius: {
+        DEFAULT: "12px",
+        'card': "20px"
+      },
+      boxShadow: {
+        'glow-primary': "0 0 20px -5px rgba(110, 231, 183, 0.4)",
+        'glow-secondary': "0 0 20px -5px rgba(129, 140, 248, 0.4)",
+      }
     },
   },
   plugins: [],

@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReplySync
 
-## Getting Started
+ReplySync is a secure, multi-tenant WhatsApp Automation and CRM platform. Built to abstract the complexity of Meta's Developer Cloud into an aggressively robust React front-end, it connects incoming WhatsApp conversations synchronously into your local database, allowing local supervisors to resolve leads or fire off AI replies driven organically via **Groq** (LLama-3).
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+* **Multi-Tenant Architecture:** Fully walled-off environments. Every logged-in supervisor only ever reads/writes threads tied natively to their own verified authenticated tokens.
+* **Instant Auto-Reply (AI):** Using Meta's webhook polling mapped straight into Groq, incoming WhatsApp traffic is passed to the AI containing your specific FAQ matrix. It answers instantly. 
+* **Lead Kanban Pipelines:** Clean, inline-editable UI lists categorizing fresh leads mapped directly out of phone calls into actionable states (`Contacted`, `Enrolled`, `Lost`).
+* **Real-time Engine:** Fully active Supabase `postgres_changes` socket websockets. Replies incoming from Meta drop into your dashboard organically without reloading.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚙️ Initial Setup Guide
 
-## Learn More
+### 1. Supabase Initialization
+1. Spin up a new blank project on [Supabase](https://supabase.com).
+2. Go to the SQL Editor and strictly run the entire `/lib/schema.sql` code block to instantly bootstrap all Tables, RLS Policies, and RPC Triggers!
+3. Obtain your `Project URL` and `Anon Public Key`.
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Vercel & Environments
+Clone this repository and inject the `.env.local` mappings (or put them in your Vercel Project):
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public Anon Supabase Key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service Role Key (from Supabase → Settings → API). **Never expose to client.** |
+| `NEXT_PUBLIC_APP_URL` | The fully qualified URL of your frontend |
+| `GROQ_API_KEY` | Free API key from `console.groq.com` |
+| `INTERNAL_API_SECRET` | Random secret string — secures internal API calls between webhook → AI reply |
+| `CRON_SECRET` | Random secret string — authenticates Vercel Cron requests |
+| `NEXT_PUBLIC_META_VERIFY_TOKEN` | A simple string you choose for Meta webhook verification |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Deploy
+Push to Vercel!
+*(Note: Because we provided `vercel.json`, your instance will automatically trigger the `api/cron/followup` endpoint natively for free!)*
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📱 Meta Webhook (Client Side Setup)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+When you onboard a new business locally, they just hit your **Settings** Panel:
+1. Create a [Meta Developer Account](https://developers.facebook.com).
+2. Create an App ➔ Add the **WhatsApp** Product constraint.
+3. Hook the Webhook URL the platform generates inside Settings (e.g. `https://yourdomain.com/api/webhook`).
+4. Drop their generated `Phone Number ID` and `Access Token` natively into ReplySync! 
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The system takes absolute control from there!
