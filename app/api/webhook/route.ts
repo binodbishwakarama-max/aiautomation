@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { processAiReply } from '@/lib/ai-service';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -107,19 +108,12 @@ export async function POST(request: Request) {
       console.error('Failed to save message:', msgError);
     }
 
-    // Fire-and-forget AI reply with internal secret
-    const protocol = request.headers.get('x-forwarded-proto') || 'https';
-    const host = request.headers.get('host');
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
-    
-    await fetch(`${appUrl}/api/ai-reply`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'x-internal-secret': process.env.INTERNAL_API_SECRET || ''
-      },
-      body: JSON.stringify({ conversationId: conversation.id })
-    }).catch(err => console.error('Error triggering AI reply:', err));
+    // Call AI service directly for maximum reliability on serverless
+    try {
+      await processAiReply(conversation.id);
+    } catch (err) {
+      console.error('Error in automated AI reply:', err);
+    }
 
     return new NextResponse('OK', { status: 200 });
 
