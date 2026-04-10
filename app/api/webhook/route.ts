@@ -108,7 +108,10 @@ export async function POST(request: Request) {
     }
 
     // Fire-and-forget AI reply with internal secret
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `http://${request.headers.get('host')}`;
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const host = request.headers.get('host');
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `${protocol}://${host}`;
+    
     fetch(`${appUrl}/api/ai-reply`, {
       method: 'POST',
       headers: { 
