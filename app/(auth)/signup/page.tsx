@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [error, setError] = useState("");
+  const [emailConfirmationSent, setEmailConfirmationSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -22,11 +23,20 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
+      const emailRedirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback?next=/onboarding`
+          : undefined;
+
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name }
+          emailRedirectTo,
+          data: {
+            name,
+            business_name: businessName,
+          }
         }
       });
 
@@ -36,25 +46,15 @@ export default function SignupPage() {
         return;
       }
 
-      // Call RPC to setup business link securely
-      if (authData.user) {
-        const { error: rpcError } = await supabase.rpc('create_business_with_owner', {
-          business_name: businessName,
-          user_email: email
-        });
-
-        if (rpcError) {
-          console.error("RPC Business Creation Error:", rpcError);
-          setError("Account created, but establishing business metadata failed.");
-          setIsLoading(false);
-          return;
-        }
-
+      if (authData.session) {
         router.push("/onboarding");
         router.refresh();
+      } else {
+        setEmailConfirmationSent(true);
       }
     } catch {
       setError("An unexpected error occurred during signup.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -74,6 +74,12 @@ export default function SignupPage() {
         {error && (
           <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
             {error}
+          </div>
+        )}
+
+        {emailConfirmationSent && (
+          <div className="mb-6 p-3 bg-primary/10 border border-primary/30 rounded-lg text-textPrimary text-sm text-center">
+            Account created. Check your inbox to verify your email before signing in.
           </div>
         )}
 

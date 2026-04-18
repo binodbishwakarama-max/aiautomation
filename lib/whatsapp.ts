@@ -1,48 +1,178 @@
-export async function sendWhatsAppMessage(to: string, message: string, phoneNumberId: string, accessToken?: string) {
-  const metaToken = accessToken || process.env.META_WHATSAPP_TOKEN;
-  if (!metaToken) {
-    console.error('No WhatsApp access token available');
-    return { success: false, error: 'No WhatsApp access token available' };
-  }
+import { createHmac } from 'crypto';
 
-  // Validate phoneNumberId is numeric to prevent SSRF
-  if (!/^\d+$/.test(phoneNumberId)) {
-    return { success: false, error: 'Invalid phone number ID format' };
-  }
+import { constantTimeEquals } from '@/lib/crypto';
 
-  const url = `https://graph.facebook.com/v19.0/${phoneNumberId}/messages`;
+type TextMessageParams = {
+  to: string;
+  body: string;
+  phoneNumberId: string;
+  accessToken: string;
+};
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${metaToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to: to,
-        type: 'text',
-        text: { body: message }
-      })
-    });
+type TemplateMessageParams = {
+  to: string;
+  phoneNumberId: string;
+  accessToken: string;
+  templateName: string;
+  languageCode?: string;
+  variables?: string[];
+};
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('Failed to send WhatsApp message:', errorBody);
-      return { success: false, error: errorBody };
-    }
-
-    const data = await response.json();
-    return { success: true, data };
-  } catch (error) {
-    console.error('Network error sending WhatsApp message:', error);
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
-  }
+function isNumericMetaId(value: string) {
+  return /^\d+$/.test(value);
 }
 
-export async function sendFollowUp(to: string, phoneNumberId: string, accessToken?: string, customMessage?: string) {
-  const followUpMessage = customMessage || "Hi! Just checking in — did you get all the information you needed? We'd love to help you get started. 😊";
-  return await sendWhatsAppMessage(to, followUpMessage, phoneNumberId, accessToken);
+async function callWhatsAppGraphApi(
+  phoneNumberId: string,
+  accessToken: string,
+  payload: Record<string, unknown>
+) {
+  if (!isNumericMetaId(phoneNumberId)) {
+    return { success: false as const, error: 'Invalid phone number ID format.' };
+  }
+
+  const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    return {
+      success: false as const,
+      error: await response.text(),
+    };
+  }
+
+  const data = await response.json();
+  return { success: true as const, data };
 }
+
+export async function sendWhatsAppTextMessage(params: TextMessageParams) {
+  const { to, body, phoneNumberId, accessToken } = params;
+
+  if (!accessToken) {
+    return { success: false as const, error: 'Missing WhatsApp access token.' };
+  }
+
+  return callWhatsAppGraphApi(phoneNumberId, accessToken, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'text',
+    text: { body },
+  });
+}
+
+export async function sendWhatsAppTemplateMessage(params: TemplateMessageParams) {
+  const {
+    to,
+    phoneNumberId,
+    accessToken,
+    templateName,
+    languageCode = 'en_US',
+    variables = [],
+  } = params;
+
+  if (!templateName.trim()) {
+    return { success: false as const, error: 'A template name is required for follow-up sends.' };
+  }
+
+  const components =
+    variables.length > 0
+      ? [
+          {
+            type: 'body',
+            parameters: variables.map((value) => ({
+              type: 'text',
+              text: value,
+            })),
+          },
+        ]
+      : undefined;
+
+  return callWhatsAppGraphApi(phoneNumberId, accessToken, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: languageCode },
+      ...(components ? { components } : {}),
+    },
+  });
+}
+
+export function extractProviderMessageId(data: unknown) {
+  if (
+    data &&
+    typeof data === 'object' &&
+    Array.isArray((data as { messages?: unknown[] }).messages) &&
+    (data as { messages: Array<{ id?: string }> }).messages[0]?.id
+  ) {
+    return (data as { messages: Array<{ id: string }> }).messages[0].id;
+  }
+
+  return null;
+}
+
+export function verifyMetaWebhookSignature(params: {
+  rawBody: string;
+  signatureHeader: string | null;
+  appSecret: string | null;
+}) {
+  const { rawBody, signatureHeader, appSecret } = params;
+
+  if (!signatureHeader || !appSecret) {
+    return false;
+  }
+
+  const expectedSignature = `sha256=${createHmac('sha256', appSecret).update(rawBody).digest('hex')}`;
+  return constantTimeEquals(expectedSignature, signatureHeader);
+}
+
+export async function downloadWhatsAppMedia(mediaId: string, accessToken: string) {
+  if (!accessToken || !isNumericMetaId(mediaId)) {
+    throw new Error('Missing access token or invalid media ID');
+  }
+
+  // 1. Get media URL
+  const metaResponse = await fetch(`https://graph.facebook.com/v19.0/${mediaId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!metaResponse.ok) {
+    throw new Error(`Failed to fetch media metadata: ${await metaResponse.text()}`);
+  }
+
+  const metaData = await metaResponse.json();
+  const mediaUrl = metaData.url;
+
+  if (!mediaUrl) {
+    throw new Error('Media URL not found in Graph API response');
+  }
+
+  // 2. Download media binary
+  const binaryResponse = await fetch(mediaUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!binaryResponse.ok) {
+    throw new Error(`Failed to download media binary: ${await binaryResponse.text()}`);
+  }
+
+  const arrayBuffer = await binaryResponse.arrayBuffer();
+  return {
+    buffer: Buffer.from(arrayBuffer),
+    mimeType: metaData.mime_type
+  };
+}
+

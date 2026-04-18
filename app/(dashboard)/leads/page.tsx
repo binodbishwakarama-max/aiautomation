@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { Lead, LeadStatus, Message } from "@/lib/types";
+import { useWorkspace } from "@/components/providers/WorkspaceProvider";
 import { 
   Download, 
   Search, 
@@ -15,14 +16,15 @@ import {
   TrendingUp,
   Award,
   ChevronRight,
-  UserPlus,
   CheckCircle
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 
 const supabase = createClient();
 
 export default function LeadsPage() {
+  const { activeWorkspaceId, loading: workspaceLoading } = useWorkspace();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -43,28 +45,18 @@ export default function LeadsPage() {
   const [newLeadName, setNewLeadName] = useState("");
   const [newLeadPhone, setNewLeadPhone] = useState("");
   const [addingLead, setAddingLead] = useState(false);
-
-
-  const [businessId, setBusinessId] = useState("");
-
   useEffect(() => {
     async function loadData() {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
-      
-      const { data: businessUsers } = await supabase
-        .from("business_users")
-        .select("business_id")
-        .eq("user_id", userData.user.id);
-        
-      if (!businessUsers || businessUsers.length === 0) return;
-      const bId = businessUsers[0].business_id;
-      setBusinessId(bId);
+      if (!activeWorkspaceId) {
+        setLeads([]);
+        setLoading(false);
+        return;
+      }
 
       const { data: leadsData } = await supabase
         .from("leads")
         .select("id, name, phone, status, source, notes, created_at")
-        .eq("business_id", bId)
+        .eq("business_id", activeWorkspaceId)
         .order("created_at", { ascending: false });
 
       if (leadsData) {
@@ -73,8 +65,10 @@ export default function LeadsPage() {
       setLoading(false);
     }
     
-    loadData();
-  }, []);
+    if (!workspaceLoading) {
+      void loadData();
+    }
+  }, [activeWorkspaceId, workspaceLoading]);
   // Proper CSV escaping per RFC 4180
   const csvEscape = (val: string) => `"${(val || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`;
 
@@ -114,6 +108,10 @@ export default function LeadsPage() {
 
   // Open Drawer and Fetch history
   const openDrawer = async (lead: Lead) => {
+    if (!activeWorkspaceId) {
+      return;
+    }
+
     setSelectedLead(lead);
     setIsDrawerOpen(true);
     setDrawerLoading(true);
@@ -122,7 +120,7 @@ export default function LeadsPage() {
     const { data: conv } = await supabase
       .from("conversations")
       .select("id")
-      .eq("business_id", businessId)
+      .eq("business_id", activeWorkspaceId)
       .eq("customer_phone", lead.phone)
       .single();
 
@@ -140,11 +138,11 @@ export default function LeadsPage() {
   // Handle Add Lead
   const handleAddLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newLeadName || !newLeadPhone) return;
+    if (!activeWorkspaceId || !newLeadName || !newLeadPhone) return;
     setAddingLead(true);
 
     const { data: newLead } = await supabase.from("leads").insert({
-      business_id: businessId,
+      business_id: activeWorkspaceId,
       name: newLeadName,
       phone: newLeadPhone,
       status: 'new',
@@ -272,27 +270,25 @@ export default function LeadsPage() {
 
       {/* Table Area */}
       <div className="bg-surface border border-border rounded-xl flex-1 overflow-hidden flex flex-col min-h-[500px]">
-        {loading ? (
+        {loading || workspaceLoading ? (
           <div className="p-8 flex flex-col gap-4 animate-pulse">
             <div className="h-10 bg-background rounded-lg mb-4"></div>
             {[1,2,3,4,5].map(i => <div key={i} className="h-14 bg-background rounded-lg"></div>)}
           </div>
         ) : leads.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-1 text-center p-8">
-            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6">
-              <UserPlus size={40} />
-            </div>
-            <h2 className="text-xl font-bold text-textPrimary mb-2">No Leads Yet</h2>
-            <p className="text-textMuted max-w-sm">
-              Your first lead will appear here automatically when a student messages you on WhatsApp.
-            </p>
-            <button 
-              onClick={() => setIsAddModalOpen(true)}
-              className="mt-6 px-6 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl font-bold hover:bg-primary/20 transition-all text-sm"
-            >
-              Add a Lead Manually
-            </button>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="No leads pipeline yet"
+            description="Your first lead will appear here automatically when a student messages you on WhatsApp. Or you can manually add one to start tracking."
+            action={
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="mt-6 px-6 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl font-bold hover:bg-primary/20 transition-all text-sm"
+              >
+                Add a Lead Manually
+              </button>
+            }
+          />
         ) : (
           <>
           <div className="hidden md:block overflow-x-auto">

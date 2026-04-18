@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import { Conversation } from "@/lib/types";
+import { useWorkspace } from "@/components/providers/WorkspaceProvider";
 import { 
   MessageSquare, 
   Users, 
@@ -17,10 +18,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { VolumeChart } from "@/components/dashboard/VolumeChart";
+import { StatusDonutChart } from "@/components/dashboard/StatusDonutChart";
 
 const supabase = createClient();
 
 export default function DashboardPage() {
+  const { activeWorkspaceId, loading: workspaceLoading } = useWorkspace();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     conversationsToday: 0,
@@ -29,6 +33,7 @@ export default function DashboardPage() {
     escalations: 0,
   });
   const [recentConvos, setRecentConvos] = useState<Conversation[]>([]);
+  const [allConvos, setAllConvos] = useState<Conversation[]>([]);
   const [leadPipeline, setLeadPipeline] = useState({
     new: 0, contacted: 0, enrolled: 0, lost: 0
   });
@@ -37,19 +42,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadDashboardData() {
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) return;
-        
-        // Use RPC or directly query businesses
-        const { data: businessUsers } = await supabase
-          .from("business_users")
-          .select("business_id")
-          .eq("user_id", userData.user.id);
-          
-        if (!businessUsers || businessUsers.length === 0) return;
-        const businessId = businessUsers[0].business_id;
+      if (!activeWorkspaceId) {
+        setLoading(false);
+        return;
+      }
 
+      setLoading(true);
+
+      try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -60,14 +60,14 @@ export default function DashboardPage() {
         const { data: convos } = await supabase
           .from("conversations")
           .select("id, customer_phone, customer_name, status, last_message, last_message_at")
-          .eq("business_id", businessId)
+          .eq("business_id", activeWorkspaceId)
           .order("last_message_at", { ascending: false });
 
         // Fetch Leads
         const { data: leads } = await supabase
           .from("leads")
           .select("status, created_at")
-          .eq("business_id", businessId);
+          .eq("business_id", activeWorkspaceId);
 
         if (convos) {
           const typedConvos = convos;
@@ -84,7 +84,8 @@ export default function DashboardPage() {
             escalations,
           });
 
-          setRecentConvos((convos as Conversation[]).slice(0, 5));
+          setAllConvos(typedConvos as Conversation[]);
+          setRecentConvos((typedConvos as Conversation[]).slice(0, 5));
         }
 
         if (leads) {
@@ -103,8 +104,10 @@ export default function DashboardPage() {
       }
     }
 
-    loadDashboardData();
-  }, []);
+    if (!workspaceLoading) {
+      void loadDashboardData();
+    }
+  }, [activeWorkspaceId, workspaceLoading]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -137,7 +140,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading) {
+  if (loading || workspaceLoading) {
     return (
       <div className="flex flex-col gap-8 w-full h-full animate-pulse">
         <div className="h-10 bg-surface rounded-xl w-1/4 mb-4"></div>
@@ -249,8 +252,32 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* 3. Lead Pipeline & 4. Quick Actions */}
-        <div className="flex flex-col gap-8">
+        {/* 3. Status Donut Chart */}
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-surface rounded-card border border-border p-6 flex flex-col"
+        >
+          <h2 className="font-bold text-lg text-textPrimary mb-4">Status Breakdown</h2>
+          <div className="flex-1 min-h-[300px]">
+            <StatusDonutChart conversations={allConvos} />
+          </div>
+        </motion.div>
+
+        {/* 4. Volume Area Chart */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="xl:col-span-2 bg-surface rounded-card border border-border p-6"
+        >
+          <h2 className="font-bold text-lg text-textPrimary mb-4">Volume (7 Days)</h2>
+          <VolumeChart conversations={allConvos} />
+        </motion.div>
+
+        {/* 5. Lead Pipeline & 6. Quick Actions */}
+        <div className="flex flex-col gap-8 xl:col-span-1">
           
           <motion.div 
             initial={{ opacity: 0, x: 20 }}

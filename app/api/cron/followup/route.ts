@@ -1,119 +1,145 @@
 import { NextResponse } from 'next/server';
+
+import { logger } from '@/lib/logger';
+import { recordUsageEvent, writeAuditLog } from '@/lib/ops';
+import { getWorkspaceSecretsOrThrow } from '@/lib/server-workspace';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { extractProviderMessageId, sendWhatsAppTemplateMessage } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    // Auth: only accept calls from Vercel Cron or with valid secret
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const twentyFourHoursAgo = new Date();
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    // Fetch conversations with their business settings
     const { data: conversations, error } = await supabaseAdmin
       .from('conversations')
-      .select(`
-        id,
-        customer_phone,
-        business_id,
-        businesses (
-          whatsapp_number_id,
-          whatsapp_access_token,
-          follow_up_enabled,
-          follow_up_message
-        )
-      `)
+      .select('id, business_id, customer_phone, last_customer_message_at')
       .eq('status', 'active')
-      .lt('last_message_at', twentyFourHoursAgo.toISOString());
+      .lt('last_customer_message_at', twentyFourHoursAgo);
 
     if (error) {
-      console.error('Error fetching conversations for follow-up:', error);
+      logger.error('Error fetching conversations for follow-up', { error: error.message });
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     if (!conversations || conversations.length === 0) {
-      return NextResponse.json({ success: true, processed: 0, message: 'No eligible conversations found.' });
+      return NextResponse.json({
+        success: true,
+        processed: 0,
+        skipped: 0,
+        message: 'No eligible conversations found.',
+      });
     }
 
     let processedCount = 0;
     let skippedCount = 0;
     const failures: { conversationId: string; error: string }[] = [];
 
-    for (const conv of conversations) {
-      const biz = conv.businesses as unknown as { 
-        whatsapp_number_id: string; 
-        whatsapp_access_token: string; 
-        follow_up_enabled: boolean; 
-        follow_up_message: string | null; 
-      };
-      if (!biz || !biz.whatsapp_number_id || !biz.whatsapp_access_token) continue;
-
-      // Respect per-business follow-up toggle
-      if (biz.follow_up_enabled === false) {
-        skippedCount++;
-        continue;
-      }
-
-      // Use per-business custom message, or the default
-      const followUpText = biz.follow_up_message || 
-        "Hi! Just checking in — did you get all the information you needed? We'd love to help you get started. 😊";
-
-      // Send via Meta Cloud API using per-business token
-      const url = `https://graph.facebook.com/v19.0/${biz.whatsapp_number_id}/messages`;
+    for (const conversation of conversations) {
       try {
-        const metaRes = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${biz.whatsapp_access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messaging_product: 'whatsapp',
-            recipient_type: 'individual',
-            to: conv.customer_phone,
-            type: 'text',
-            text: { body: followUpText }
-          })
+        const secrets = await getWorkspaceSecretsOrThrow(conversation.business_id);
+
+        if (
+          !secrets.followUpEnabled ||
+          !secrets.accessToken ||
+          !secrets.whatsappNumberId ||
+          !secrets.followUpTemplateName
+        ) {
+          skippedCount += 1;
+          continue;
+        }
+
+        const sendResult = await sendWhatsAppTemplateMessage({
+          to: conversation.customer_phone,
+          phoneNumberId: secrets.whatsappNumberId,
+          accessToken: secrets.accessToken,
+          templateName: secrets.followUpTemplateName,
+          languageCode: secrets.followUpTemplateLanguageCode || 'en_US',
+          variables: secrets.followUpTemplateVariables,
         });
 
-        if (metaRes.ok) {
-          // Update status and save the follow-up message for audit trail
-          await supabaseAdmin
-            .from('conversations')
-            .update({ status: 'followed_up' })
-            .eq('id', conv.id);
-
-          await supabaseAdmin.from('messages').insert({
-            conversation_id: conv.id,
-            role: 'assistant',
-            content: followUpText,
-            sent_at: new Date().toISOString()
+        if (!sendResult.success) {
+          failures.push({
+            conversationId: conversation.id,
+            error: sendResult.error,
           });
-
-          processedCount++;
-        } else {
-          const errText = await metaRes.text();
-          failures.push({ conversationId: conv.id, error: errText });
+          continue;
         }
-      } catch (sendErr) {
-        failures.push({ conversationId: conv.id, error: sendErr instanceof Error ? sendErr.message : String(sendErr) });
+
+        const sentAt = new Date().toISOString();
+        const providerMessageId = extractProviderMessageId(sendResult.data);
+
+        await supabaseAdmin
+          .from('conversations')
+          .update({
+            status: 'followed_up',
+            last_message_at: sentAt,
+            last_outbound_message_at: sentAt,
+          })
+          .eq('id', conversation.id);
+
+        await supabaseAdmin.from('messages').insert({
+          conversation_id: conversation.id,
+          role: 'assistant',
+          direction: 'outbound',
+          content: `Follow-up template sent: ${secrets.followUpTemplateName}`,
+          provider_message_id: providerMessageId,
+          message_type: 'template',
+          metadata: {
+            source: 'follow_up_cron',
+            templateName: secrets.followUpTemplateName,
+            languageCode: secrets.followUpTemplateLanguageCode || 'en_US',
+            variables: secrets.followUpTemplateVariables,
+          },
+          sent_at: sentAt,
+        });
+
+        await recordUsageEvent({
+          businessId: conversation.business_id,
+          eventType: 'follow_up_template_sent',
+          metadata: {
+            conversationId: conversation.id,
+            providerMessageId,
+          },
+        });
+
+        await writeAuditLog({
+          businessId: conversation.business_id,
+          action: 'conversation.follow_up_sent',
+          entityType: 'conversation',
+          entityId: conversation.id,
+          metadata: {
+            templateName: secrets.followUpTemplateName,
+          },
+        });
+
+        processedCount += 1;
+      } catch (loopError) {
+        const errorMsg = loopError instanceof Error ? loopError.message : String(loopError);
+        logger.error('Follow-up failed for conversation', { conversationId: conversation.id, error: errorMsg });
+        failures.push({
+          conversationId: conversation.id,
+          error: errorMsg,
+        });
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      processed: processedCount, 
-      skipped: skippedCount,
-      failures: failures.length > 0 ? failures : undefined 
-    });
+    logger.info('Follow-up cron completed', { processed: processedCount, skipped: skippedCount, failures: failures.length });
 
+    return NextResponse.json({
+      success: true,
+      processed: processedCount,
+      skipped: skippedCount,
+      failures: failures.length > 0 ? failures : undefined,
+    });
   } catch (error) {
-    console.error('Cron FollowUp Error:', error);
+    logger.error('Cron FollowUp Error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useWorkspace } from "@/components/providers/WorkspaceProvider";
 import { 
   Building2, 
   HelpCircle, 
@@ -30,8 +31,8 @@ const SUGGESTED_FAQS = [
 const supabase = createClient();
 
 export default function OnboardingPage() {
+  const { activeWorkspaceId, loading: workspaceLoading, canManageWorkspace } = useWorkspace();
   const [step, setStep] = useState(1);
-  const [businessId, setBusinessId] = useState("");
   const [loading, setLoading] = useState(true);
   const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
   const [showConfetti, setShowConfetti] = useState(false);
@@ -40,7 +41,7 @@ export default function OnboardingPage() {
 
   // Step 1 State
   const [name, setName] = useState("");
-  const [type, setType] = useState("Coaching Institute");
+  const [type, setType] = useState("coaching_institute");
   const [city, setCity] = useState("");
 
   // Step 2 State
@@ -49,6 +50,7 @@ export default function OnboardingPage() {
   // Step 3 State
   const [phoneId, setPhoneId] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [appSecret, setAppSecret] = useState("");
   const [testing, setTesting] = useState(false);
   const [testError, setTestError] = useState("");
 
@@ -61,15 +63,16 @@ export default function OnboardingPage() {
     setWindowDimensions({ width: window.innerWidth, height: window.innerHeight });
     
     async function init() {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
-      
-      const { data: bUsers } = await supabase.from("business_users").select("business_id").eq("user_id", userData.user.id);
-      if (!bUsers || bUsers.length === 0) return;
-      const bId = bUsers[0].business_id;
-      setBusinessId(bId);
+      if (!activeWorkspaceId) {
+        setLoading(false);
+        return;
+      }
 
-      const { data: bData } = await supabase.from("businesses").select("*").eq("id", bId).single();
+      const { data: bData } = await supabase
+        .from("businesses")
+        .select("id, name, business_type, city, whatsapp_number_id")
+        .eq("id", activeWorkspaceId)
+        .single();
       if (bData) {
         setName(bData.name || "");
         if (bData.business_type) setType(bData.business_type);
@@ -78,8 +81,10 @@ export default function OnboardingPage() {
       }
       setLoading(false);
     }
-    init();
-  }, []);
+    if (!workspaceLoading) {
+      void init();
+    }
+  }, [activeWorkspaceId, workspaceLoading]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -87,26 +92,36 @@ export default function OnboardingPage() {
   };
 
   const handleStep1Next = async () => {
+    if (!activeWorkspaceId) return error("No workspace selected");
     if (!name.trim()) return error("Business name is required");
-    await supabase.from("businesses").update({ name, business_type: type, city }).eq("id", businessId);
+    await supabase.from("businesses").update({ name, business_type: type, city }).eq("id", activeWorkspaceId);
     setStep(2);
   };
 
   const handleStep2Next = async () => {
+    if (!activeWorkspaceId) return error("No workspace selected");
     // Filter out empty answers
     const filledFaqs = faqs.filter(f => f.question.trim() && f.answer.trim());
     
     if (filledFaqs.length > 0) {
-      await supabase.from("faqs").delete().eq("business_id", businessId); // Clean flush
+      await supabase.from("faqs").delete().eq("business_id", activeWorkspaceId); // Clean flush
       await supabase.from("faqs").insert(
-        filledFaqs.map(f => ({ business_id: businessId, question: f.question, answer: f.answer }))
+        filledFaqs.map((faq, index) => ({
+          business_id: activeWorkspaceId,
+          question: faq.question,
+          answer: faq.answer,
+          display_order: index,
+        }))
       );
     }
     setStep(3);
   };
 
   const handleTestConnection = async () => {
-    if (!phoneId || !accessToken) return error("Please enter both ID and Token.");
+    if (!activeWorkspaceId) return error("No workspace selected.");
+    if (!phoneId || !accessToken || !appSecret) {
+      return error("Please enter Phone Number ID, Access Token, and App Secret.");
+    }
     
     setTesting(true);
     setTestError("");
@@ -115,16 +130,36 @@ export default function OnboardingPage() {
       const res = await fetch("/api/test-connection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumberId: phoneId, accessToken })
+        body: JSON.stringify({
+          workspaceId: activeWorkspaceId,
+          phoneNumberId: phoneId,
+          accessToken
+        })
       });
       const data = await res.json();
       
       if (data.success) {
-        // Save to DB
-        await supabase.from("businesses").update({
-          whatsapp_number_id: phoneId,
-          whatsapp_access_token: accessToken
-        }).eq("id", businessId);
+        const saveResponse = await fetch("/api/workspace/whatsapp-config", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workspaceId: activeWorkspaceId,
+            whatsappNumberId: phoneId,
+            accessToken,
+            appSecret,
+            followUpEnabled: false,
+            followUpTemplateName: null,
+            followUpTemplateLanguageCode: "en_US",
+            followUpTemplateVariables: [],
+          }),
+        });
+
+        const savePayload = await saveResponse.json();
+        if (!saveResponse.ok) {
+          setTestError(savePayload.error || "Unable to store WhatsApp credentials.");
+          setTesting(false);
+          return;
+        }
 
         setShowConfetti(true);
         success("WhatsApp API Connected! Redirecting...");
@@ -140,7 +175,11 @@ export default function OnboardingPage() {
     setTesting(false);
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
+  if (loading || workspaceLoading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
+
+  if (!canManageWorkspace) {
+    return <div className="h-screen flex items-center justify-center text-textMuted">Only workspace admins can complete onboarding.</div>;
+  }
 
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
@@ -205,11 +244,11 @@ export default function OnboardingPage() {
                   <div>
                     <label className="block text-sm font-medium text-textMuted mb-2">Business Category</label>
                     <select value={type} onChange={e=>setType(e.target.value)} className="w-full bg-background border border-border rounded-xl px-4 py-3 text-textPrimary focus:border-primary focus:outline-none appearance-none transition-colors cursor-pointer">
-                      <option value="Coaching Institute">Coaching Institute</option>
-                      <option value="Tuition Center">Tuition Center</option>
-                      <option value="E-Learning">E-Learning</option>
-                      <option value="Consultancy">Consultancy</option>
-                      <option value="Other">Other</option>
+                      <option value="coaching_institute">Coaching Institute</option>
+                      <option value="tuition_center">Tuition Center</option>
+                      <option value="e_learning">E-Learning</option>
+                      <option value="consultancy">Consultancy</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
                   <div>
@@ -286,6 +325,10 @@ export default function OnboardingPage() {
                     <div>
                       <label className="block text-xs font-semibold uppercase tracking-wider text-textMuted mb-2">Access Token</label>
                       <input type="password" value={accessToken} onChange={e=>setAccessToken(e.target.value)} placeholder="EAA..." className="w-full bg-background border border-border rounded-xl px-4 py-2.5 font-mono text-sm text-textPrimary focus:border-primary focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-textMuted mb-2">Meta App Secret</label>
+                      <input type="password" value={appSecret} onChange={e=>setAppSecret(e.target.value)} placeholder="Required to verify webhook signatures" className="w-full bg-background border border-border rounded-xl px-4 py-2.5 font-mono text-sm text-textPrimary focus:border-primary focus:outline-none" />
                     </div>
                   </div>
 

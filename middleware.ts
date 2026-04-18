@@ -56,7 +56,11 @@ export async function middleware(request: NextRequest) {
 
   // Fetch session
   const { data: { user } } = await supabase.auth.getUser()
-  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup'
+  const isAuthRoute =
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/signup' ||
+    request.nextUrl.pathname === '/forgot-password' ||
+    request.nextUrl.pathname === '/reset-password'
 
   // If no user and asking for protected route -> Send to login
   if (!user && !isAuthRoute) {
@@ -77,6 +81,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/webhook|api/ai-reply|api/cron|api/test-connection).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
 }

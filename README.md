@@ -1,50 +1,78 @@
 # ReplySync
 
-ReplySync is a secure, multi-tenant WhatsApp Automation and CRM platform. Built to abstract the complexity of Meta's Developer Cloud into an aggressively robust React front-end, it connects incoming WhatsApp conversations synchronously into your local database, allowing local supervisors to resolve leads or fire off AI replies driven organically via **Groq** (LLama-3).
+ReplySync is a multi-tenant WhatsApp automation and CRM app built with Next.js and Supabase.
 
----
+This branch includes a SaaS hardening pass focused on:
 
-## 🚀 Key Features
+- encrypted tenant secrets at rest
+- signed Meta webhook verification
+- webhook idempotency by provider message ID
+- template-based follow-ups after the 24-hour service window
+- resilient signup/reset-password flows
+- workspace switching and role-aware UI
+- audit logs, usage metering, billing/seat scaffolding, and tests
 
-* **Multi-Tenant Architecture:** Fully walled-off environments. Every logged-in supervisor only ever reads/writes threads tied natively to their own verified authenticated tokens.
-* **Instant Auto-Reply (AI):** Using Meta's webhook polling mapped straight into Groq, incoming WhatsApp traffic is passed to the AI containing your specific FAQ matrix. It answers instantly. 
-* **Lead Kanban Pipelines:** Clean, inline-editable UI lists categorizing fresh leads mapped directly out of phone calls into actionable states (`Contacted`, `Enrolled`, `Lost`).
-* **Real-time Engine:** Fully active Supabase `postgres_changes` socket websockets. Replies incoming from Meta drop into your dashboard organically without reloading.
+## Setup
 
----
+### 1. Database
 
-## ⚙️ Initial Setup Guide
+For a fresh project, run [`lib/schema.sql`](./lib/schema.sql).
 
-### 1. Supabase Initialization
-1. Spin up a new blank project on [Supabase](https://supabase.com).
-2. Go to the SQL Editor and strictly run the entire `/lib/schema.sql` code block to instantly bootstrap all Tables, RLS Policies, and RPC Triggers!
-3. Obtain your `Project URL` and `Anon Public Key`.
+For an existing project based on the older schema, run [`lib/migrations/20260418_saas_hardening.sql`](./lib/migrations/20260418_saas_hardening.sql) and then re-enter each tenant's WhatsApp access token and Meta app secret from the Settings page.
 
-### 2. Vercel & Environments
-Clone this repository and inject the `.env.local` mappings (or put them in your Vercel Project):
+### 2. Environment Variables
+
+Set these in `.env.local` or in your hosting platform:
+
 | Variable | Description |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public Anon Supabase Key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service Role Key (from Supabase → Settings → API). **Never expose to client.** |
-| `NEXT_PUBLIC_APP_URL` | The fully qualified URL of your frontend |
-| `GROQ_API_KEY` | Free API key from `console.groq.com` |
-| `INTERNAL_API_SECRET` | Random secret string — secures internal API calls between webhook → AI reply |
-| `CRON_SECRET` | Random secret string — authenticates Vercel Cron requests |
-| `NEXT_PUBLIC_META_VERIFY_TOKEN` | A simple string you choose for Meta webhook verification |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
+| `APP_ENCRYPTION_KEY` | Required. Used to encrypt tenant secrets before storing them |
+| `GROQ_API_KEY` | Groq API key |
+| `CRON_SECRET` | Protects the follow-up cron endpoint |
+| `META_VERIFY_TOKEN` | Server-side webhook verify token |
+| `NEXT_PUBLIC_META_VERIFY_TOKEN` | Same value as `META_VERIFY_TOKEN`, exposed only so the UI can display setup instructions |
 
-### 3. Deploy
-Push to Vercel!
-*(Note: Because we provided `vercel.json`, your instance will automatically trigger the `api/cron/followup` endpoint natively for free!)*
+### 3. WhatsApp Tenant Setup
 
----
+Each workspace now needs three values for a secure integration:
 
-## 📱 Meta Webhook (Client Side Setup)
+1. `Phone Number ID`
+2. `Access Token`
+3. `Meta App Secret`
 
-When you onboard a new business locally, they just hit your **Settings** Panel:
-1. Create a [Meta Developer Account](https://developers.facebook.com).
-2. Create an App ➔ Add the **WhatsApp** Product constraint.
-3. Hook the Webhook URL the platform generates inside Settings (e.g. `https://yourdomain.com/api/webhook`).
-4. Drop their generated `Phone Number ID` and `Access Token` natively into ReplySync! 
+The app secret is required so `/api/webhook` can validate the `x-hub-signature-256` signature before processing messages.
 
-The system takes absolute control from there!
+### 4. Follow-ups
+
+Follow-up messages are now sent as approved WhatsApp templates, not free-form text. Configure:
+
+- template name
+- language code
+- optional template variables
+
+in the Settings screen.
+
+## Auth Flow
+
+- Signup stores the intended business name in auth metadata.
+- Workspace creation is completed after the user has a valid authenticated session.
+- Email verification and password reset both use `/auth/callback`.
+
+## Scripts
+
+```bash
+npm run dev
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+## Notes
+
+- Agents can work leads and conversations, but workspace-level configuration is restricted to owners/admins.
+- Secrets are masked in the browser and only rotated through server routes.
+- Manual human takeover replies now send through a server-controlled endpoint and are audited.
