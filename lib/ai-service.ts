@@ -4,6 +4,8 @@ import { logger } from '@/lib/logger';
 import { recordUsageEvent, writeAuditLog } from '@/lib/ops';
 import { getWorkspaceSecretsOrThrow } from '@/lib/server-workspace';
 import { extractProviderMessageId, sendWhatsAppTextMessage } from '@/lib/whatsapp';
+import { getEmbedding } from '@/lib/embedding';
+
 
 type ChatMessageRole = 'system' | 'user' | 'assistant';
 
@@ -71,15 +73,43 @@ export async function processAiReply(conversationId: string) {
 
     const secrets = await getWorkspaceSecretsOrThrow(conv.business_id);
 
-    const { data: faqs } = await supabaseAdmin
-      .from('faqs')
-      .select('question, answer')
-      .eq('business_id', conv.business_id)
-      .order('display_order', { ascending: true })
-      .order('created_at', { ascending: true });
+    // RAG: Match FAQs by cosine similarity using Hugging Face embeddings
+    let faqs: Array<{ question: string; answer: string }> | null = null;
+    try {
+      if (conv.last_message) {
+        const queryEmbedding = await getEmbedding(conv.last_message);
+        if (queryEmbedding) {
+          const { data: matchedFaqs, error: matchError } = await supabaseAdmin.rpc('match_faqs', {
+            query_embedding: queryEmbedding,
+            target_business_id: conv.business_id,
+            match_threshold: 0.35, // similarity threshold
+            match_count: 4, // top 4 matches
+          });
+
+          if (!matchError && matchedFaqs && matchedFaqs.length > 0) {
+            faqs = matchedFaqs;
+          }
+        }
+      }
+    } catch (ragError) {
+      logger.error('RAG matching failed, falling back to all FAQs', { error: String(ragError) });
+    }
+
+    // Fallback: If RAG fails or finds nothing, load standard ordered FAQs
+    if (!faqs) {
+      const { data: fallbackFaqs } = await supabaseAdmin
+        .from('faqs')
+        .select('question, answer')
+        .eq('business_id', conv.business_id)
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: true })
+        .limit(15);
+      faqs = fallbackFaqs;
+    }
 
     const faqText =
       faqs?.map((faq) => `Q: ${faq.question}\nA: ${faq.answer}`).join('\n\n') || 'No FAQs available.';
+
 
     const { data: recentMessages } = await supabaseAdmin
       .from('messages')

@@ -8,6 +8,7 @@ import FollowUpConfigCard from "@/components/settings/FollowUpConfigCard";
 import FaqManager from "@/components/settings/FaqManager";
 import BillingSnapshotCard from "@/components/settings/BillingSnapshotCard";
 import UsageAndAuditCards from "@/components/settings/UsageAndAuditCards";
+import FacebookSDKLoader from "@/components/settings/FacebookSDKLoader";
 import { useSettingsForm } from "@/hooks/useSettingsForm";
 
 export default function SettingsPage() {
@@ -26,6 +27,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-16">
+      <FacebookSDKLoader />
       {/* Header + Save */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -122,6 +124,7 @@ export default function SettingsPage() {
 
       {/* WhatsApp Credentials */}
       <WhatsAppCredentialsCard
+        workspaceId={form.activeWorkspaceId || ""}
         whatsappNumberId={form.whatsappNumberId}
         setWhatsappNumberId={form.setWhatsappNumberId}
         storedAccessTokenLast4={form.storedAccessTokenLast4}

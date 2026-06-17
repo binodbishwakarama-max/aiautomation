@@ -4,8 +4,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("../lib/supabase-admin", () => ({
   supabaseAdmin: {
     from: vi.fn(),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 }));
+
+// Mock embedding
+vi.mock("../lib/embedding", () => ({
+  getEmbedding: vi.fn().mockResolvedValue(null),
+}));
+
 
 // Mock Groq
 vi.mock("../lib/groq", () => ({
@@ -90,12 +97,18 @@ describe("processAiReply", () => {
           error: null,
         });
       } else if (table === "faqs") {
+        const faqData = {
+          data: [{ question: "What courses?", answer: "Math and Science." }],
+          error: null,
+        };
+        const secondOrderMock = vi.fn(() => ({
+          ...chain,
+          limit: vi.fn().mockResolvedValue(faqData),
+          then: (onfulfilled: any) => Promise.resolve(faqData).then(onfulfilled),
+        }));
         (chain.order as ReturnType<typeof vi.fn>).mockReturnValue({
           ...chain,
-          order: vi.fn().mockResolvedValue({
-            data: [{ question: "What courses?", answer: "Math and Science." }],
-            error: null,
-          }),
+          order: secondOrderMock,
         });
       } else if (table === "messages") {
         (chain.order as ReturnType<typeof vi.fn>).mockReturnValue({

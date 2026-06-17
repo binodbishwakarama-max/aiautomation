@@ -105,6 +105,7 @@ export async function POST(request: Request) {
 
     let textBody = '';
     let isVoiceNote = false;
+    let audioUrl = '';
 
     if (message.type === 'text') {
       textBody = (message.text as Record<string, string>)?.body || '';
@@ -115,6 +116,28 @@ export async function POST(request: Request) {
         const { downloadWhatsAppMedia } = await import('@/lib/whatsapp');
         const { buffer, mimeType } = await downloadWhatsAppMedia(audioId, secrets.accessToken!);
         
+        // Upload to Supabase Storage
+        try {
+          const fileName = `${business.id}/${providerMessageId || Date.now()}.ogg`;
+          const { error: uploadError } = await supabaseAdmin.storage
+            .from('voice-notes')
+            .upload(fileName, buffer, {
+              contentType: mimeType,
+              upsert: true,
+            });
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabaseAdmin.storage
+              .from('voice-notes')
+              .getPublicUrl(fileName);
+            audioUrl = publicUrl;
+          } else {
+            logger.error('Failed to upload audio to Supabase Storage', { error: uploadError.message });
+          }
+        } catch (storageErr) {
+          logger.error('Failed storage upload process', { error: storageErr instanceof Error ? storageErr.message : String(storageErr) });
+        }
+
         // Pass to Groq Whisper
         const GroqResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
           method: "POST",
@@ -181,6 +204,13 @@ export async function POST(request: Request) {
       return new NextResponse('OK', { status: 200 });
     }
 
+    const messageMetadata: Record<string, unknown> = {
+      phoneNumberId,
+    };
+    if (audioUrl) {
+      messageMetadata.audioUrl = audioUrl;
+    }
+
     const { error: messageError } = await supabaseAdmin.from('messages').insert({
       conversation_id: conversation.id,
       role: 'user',
@@ -188,9 +218,7 @@ export async function POST(request: Request) {
       content: textBody,
       provider_message_id: providerMessageId,
       message_type: isVoiceNote ? 'audio' : 'text',
-      metadata: {
-        phoneNumberId,
-      },
+      metadata: messageMetadata,
       sent_at: timestamp,
     });
 
@@ -212,24 +240,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // Process AI reply asynchronously — respond 200 to Meta immediately.
-    // Uses waitUntil() on Vercel to continue processing after the response.
-    // Falls back to fire-and-forget in non-Vercel environments.
-    const aiReplyPromise = processAiReply(conversation.id).catch((error) => {
-      logger.error('Error in automated AI reply', {
-        conversationId: conversation.id,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    });
-
-    if (typeof globalThis !== 'undefined' && 'waitUntil' in globalThis) {
-      // Vercel Edge/Serverless runtime
-      (globalThis as unknown as { waitUntil: (p: Promise<unknown>) => void }).waitUntil(aiReplyPromise);
-    } else {
-      // Non-Vercel: fire-and-forget (the promise is already catch-guarded)
-      void aiReplyPromise;
-    }
-
+    // AI reply trigger is handled asynchronously via PostgreSQL net.http_post
     return new NextResponse('OK', { status: 200 });
   } catch (error) {
     logger.error('Webhook Error', { error: error instanceof Error ? error.message : String(error) });
