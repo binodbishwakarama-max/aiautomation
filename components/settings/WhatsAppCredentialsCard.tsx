@@ -141,11 +141,11 @@ interface FBWindow {
   ];
 
   return (
-    <section className="bg-surface border border-border p-6 rounded-card transition-all duration-300">
+    <section className="glass-card p-8 md:p-10 rounded-card shimmer-container">
       {/* Title Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-border pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-white/5 pb-8">
         <div>
-          <h2 className="text-lg font-bold text-textPrimary flex items-center gap-2 mb-1">
+          <h2 className="text-lg font-bold text-textPrimary flex items-center gap-2 mb-1 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
             <MessageCircle size={20} className="text-primary animate-pulse" /> WhatsApp Setup Assistant
           </h2>
           <p className="text-xs text-textMuted max-w-2xl">
@@ -154,12 +154,12 @@ interface FBWindow {
         </div>
         
         {connectionStatus === "success" && (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold rounded-lg shadow-sm">
+          <span className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl shadow-[0_0_15px_-3px_rgba(16,185,129,0.25)]">
             <CheckCircle2 size={14} /> Verified Connection
           </span>
         )}
         {connectionStatus === "error" && (
-          <span className="flex items-center gap-1.5 px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-lg shadow-sm animate-bounce">
+          <span className="flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold rounded-xl shadow-[0_0_15px_-3px_rgba(244,63,94,0.25)] animate-pulse">
             <XCircle size={14} /> Verification Failed
           </span>
         )}
@@ -167,9 +167,9 @@ interface FBWindow {
 
       {/* Modern Google-Style Step Bar */}
       <div className="flex items-center justify-between max-w-3xl mx-auto mb-10 relative">
-        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-border -z-10" />
+        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-white/5 -z-10" />
         <div 
-          className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary -z-10 transition-all duration-300"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-primary to-secondary -z-10 transition-all duration-300"
           style={{ width: `${((activeStep - 1) / (steps.length - 1)) * 100}%` }}
         />
 
@@ -181,22 +181,22 @@ interface FBWindow {
               key={step.number}
               type="button"
               onClick={() => setActiveStep(step.number as 1 | 2 | 3)}
-              className="flex flex-col items-center gap-2 focus:outline-none"
+              className="flex flex-col items-center gap-2.5 focus:outline-none group"
             >
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all duration-300 ${
+                className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 ${
                   isCompleted
-                    ? "bg-primary border-primary text-background"
+                    ? "bg-primary border-primary text-background shadow-[0_0_15px_-2px_rgba(110,231,183,0.3)]"
                     : isActive
-                    ? "bg-background border-primary text-primary shadow-glow-primary scale-110"
-                    : "bg-background border-border text-textMuted"
+                    ? "bg-background border-primary text-primary shadow-[0_0_20px_-3px_rgba(110,231,183,0.4)] scale-110"
+                    : "bg-background border-white/5 text-textMuted group-hover:border-white/20"
                 }`}
               >
-                {isCompleted ? <Check size={16} /> : step.number}
+                {isCompleted ? <Check size={14} /> : step.number}
               </div>
               <span
-                className={`text-xs font-medium transition-colors duration-300 hidden sm:inline ${
-                  isActive ? "text-primary font-bold" : "text-textMuted"
+                className={`text-xs font-semibold tracking-wide transition-colors duration-300 hidden sm:inline ${
+                  isActive ? "text-primary font-bold" : "text-textMuted group-hover:text-textPrimary"
                 }`}
               >
                 {step.label}
@@ -207,7 +207,7 @@ interface FBWindow {
       </div>
 
       {/* Step Panel Contents */}
-      <div className="bg-background/40 border border-border/60 rounded-2xl p-6 min-h-[280px] flex flex-col justify-between">
+      <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-8 min-h-[300px] flex flex-col justify-between backdrop-blur-md transition-all duration-300">
         
         {/* STEP 1: Meta Webhook Setup */}
         {activeStep === 1 && (
@@ -232,12 +232,12 @@ interface FBWindow {
             <div className="space-y-4 pt-2">
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs font-semibold text-textMuted">Callback URL</span>
-                <div className="flex items-center gap-2 bg-surface border border-border rounded-xl px-4 py-2.5">
+                <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 hover:border-white/10 transition-all duration-300">
                   <div className="flex-1 font-mono text-xs text-textPrimary truncate">{webhookURL}</div>
                   <button
                     type="button"
                     onClick={handleCopyUrl}
-                    className="p-1.5 hover:text-primary transition-colors text-textMuted"
+                    className="p-1.5 hover:text-primary transition-colors text-textMuted active:scale-90"
                     title="Copy URL"
                   >
                     {copiedUrl ? <Check size={16} className="text-primary" /> : <Copy size={16} />}
@@ -247,12 +247,12 @@ interface FBWindow {
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs font-semibold text-textMuted">Verify Token</span>
-                <div className="flex items-center gap-2 bg-surface border border-border rounded-xl px-4 py-2.5">
+                <div className="flex items-center gap-2 bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 hover:border-white/10 transition-all duration-300">
                   <div className="flex-1 font-mono text-xs text-textPrimary truncate">{verifyToken}</div>
                   <button
                     type="button"
                     onClick={handleCopyToken}
-                    className="p-1.5 hover:text-primary transition-colors text-textMuted"
+                    className="p-1.5 hover:text-primary transition-colors text-textMuted active:scale-90"
                     title="Copy Token"
                   >
                     {copiedToken ? <Check size={16} className="text-primary" /> : <Copy size={16} />}
@@ -275,7 +275,7 @@ interface FBWindow {
             </div>
 
             {/* Google-like Connect Button */}
-            <div className="flex flex-col items-center justify-center p-6 border border-border/80 bg-surface/30 rounded-2xl text-center space-y-4 max-w-xl mx-auto w-full">
+            <div className="flex flex-col items-center justify-center p-8 border border-white/5 bg-white/[0.01] rounded-2xl text-center space-y-5 max-w-xl mx-auto w-full shadow-inner">
               <div className="w-12 h-12 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold text-xl">
                 f
               </div>
@@ -290,7 +290,7 @@ interface FBWindow {
                 type="button"
                 onClick={handleFacebookConnect}
                 disabled={connectingOauth || disabled}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-md transition-all text-xs w-full max-w-xs cursor-pointer"
+                className="flex items-center justify-center gap-2.5 px-6 py-3 bg-[#1877f2] hover:bg-[#156bec] disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all text-xs w-full max-w-xs cursor-pointer active:scale-95"
               >
                 {connectingOauth ? "Connecting..." : "Connect with Facebook"}
               </button>
@@ -301,9 +301,9 @@ interface FBWindow {
             </div>
 
             <div className="flex items-center justify-center gap-4 my-2 max-w-xl mx-auto w-full">
-              <div className="flex-grow h-px bg-border/50"></div>
+              <div className="flex-grow h-px bg-white/5"></div>
               <span className="text-[10px] text-textMuted font-bold uppercase tracking-widest">Or</span>
-              <div className="flex-grow h-px bg-border/50"></div>
+              <div className="flex-grow h-px bg-white/5"></div>
             </div>
 
             <div className="text-center">
@@ -317,7 +317,7 @@ interface FBWindow {
             </div>
 
             {showManual && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-border/40 mt-4 animate-fadeIn">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-white/5 mt-4 animate-fadeIn">
                 <div>
                   <label className="block text-xs font-semibold text-textMuted mb-2">WhatsApp Phone Number ID</label>
                   <input
@@ -326,13 +326,13 @@ interface FBWindow {
                     disabled={disabled}
                     onChange={(e) => setWhatsappNumberId(e.target.value)}
                     placeholder="e.g. 1029384756"
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 font-mono text-sm text-textPrimary focus:border-primary focus:outline-none disabled:opacity-60"
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-textMuted mb-2">Stored Access Token Status</label>
-                  <div className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-textPrimary flex items-center justify-between">
+                  <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-textPrimary flex items-center justify-between">
                     <span>{storedAccessTokenLast4 ? `••••••••${storedAccessTokenLast4}` : "Not configured"}</span>
                     <Lock size={14} className="text-textMuted" />
                   </div>
@@ -346,7 +346,7 @@ interface FBWindow {
                     disabled={disabled}
                     onChange={(e) => setWhatsappAccessTokenInput(e.target.value)}
                     placeholder="Paste fresh system user or temporary token"
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 font-mono text-sm text-textPrimary focus:border-primary focus:outline-none disabled:opacity-60"
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
                   />
                   <label className="mt-2 inline-flex items-center gap-2 text-xs text-textMuted select-none cursor-pointer">
                     <input
@@ -361,7 +361,7 @@ interface FBWindow {
 
                 <div>
                   <label className="block text-xs font-semibold text-textMuted mb-2">Stored App Secret Status</label>
-                  <div className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-textPrimary flex items-center justify-between">
+                  <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-textPrimary flex items-center justify-between">
                     <span>{storedAppSecretLast4 ? `••••••••${storedAppSecretLast4}` : "Not configured"}</span>
                     <Lock size={14} className="text-textMuted" />
                   </div>
@@ -375,7 +375,7 @@ interface FBWindow {
                     disabled={disabled}
                     onChange={(e) => setWhatsappAppSecretInput(e.target.value)}
                     placeholder="App Secret (found under Settings > Basic in your App Dashboard)"
-                    className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 font-mono text-sm text-textPrimary focus:border-primary focus:outline-none disabled:opacity-60"
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
                   />
                   <label className="mt-2 inline-flex items-center gap-2 text-xs text-textMuted select-none cursor-pointer">
                     <input
@@ -391,7 +391,7 @@ interface FBWindow {
             )}
 
 
-            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-amber-500">
+            <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4 flex items-start gap-2.5 text-xs text-amber-400 leading-relaxed">
               <HelpCircle size={16} className="shrink-0 mt-0.5" />
               <span><strong>Note:</strong> Make sure to click <strong>Save Changes</strong> at the top right of this page to submit newly entered credentials.</span>
             </div>
@@ -409,17 +409,17 @@ interface FBWindow {
               </p>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-6 border border-border border-dashed rounded-xl gap-4 bg-surface/30">
+            <div className="flex flex-col items-center justify-center p-8 border border-white/5 border-dashed rounded-xl gap-4 bg-white/[0.01]">
               {connectionStatus === "success" ? (
                 <div className="text-center space-y-2">
-                  <CheckCircle2 size={48} className="text-green-500 mx-auto" />
-                  <p className="font-bold text-green-400">Connection Verified Successfully</p>
+                  <CheckCircle2 size={48} className="text-emerald-500 mx-auto" />
+                  <p className="font-bold text-emerald-400">Connection Verified Successfully</p>
                   <p className="text-xs text-textMuted">Your WhatsApp instance is fully operational and replying.</p>
                 </div>
               ) : connectionStatus === "error" ? (
                 <div className="text-center space-y-2">
-                  <XCircle size={48} className="text-red-500 mx-auto" />
-                  <p className="font-bold text-red-500">Verification Failed</p>
+                  <XCircle size={48} className="text-rose-500 mx-auto" />
+                  <p className="font-bold text-rose-500">Verification Failed</p>
                   <p className="text-xs text-textMuted">Check your Phone Number ID and Access Token settings, save changes, and try again.</p>
                 </div>
               ) : (
@@ -434,7 +434,7 @@ interface FBWindow {
                 type="button"
                 onClick={onTestConnection}
                 disabled={testingConnection || disabled}
-                className="flex items-center gap-2 px-6 py-2.5 bg-primary text-background font-bold rounded-xl shadow-glow-primary hover:bg-opacity-90 disabled:opacity-50 transition-all text-sm"
+                className="flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl shadow-glow-primary hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all text-sm"
               >
                 <LinkIcon size={14} />
                 {testingConnection ? "Testing Connection..." : "Test Connection"}
@@ -444,12 +444,12 @@ interface FBWindow {
         )}
 
         {/* Wizard Control Buttons */}
-        <div className="flex justify-between items-center border-t border-border pt-6 mt-8">
+        <div className="flex justify-between items-center border-t border-white/5 pt-6 mt-8">
           <button
             type="button"
             disabled={activeStep === 1}
             onClick={() => setActiveStep((prev) => (prev - 1) as 1 | 2 | 3)}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-textMuted hover:text-textPrimary disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-textMuted hover:text-textPrimary disabled:opacity-30 disabled:pointer-events-none transition-colors active:scale-95"
           >
             <ChevronLeft size={16} /> Back
           </button>
@@ -458,7 +458,7 @@ interface FBWindow {
             <button
               type="button"
               onClick={() => setActiveStep((prev) => (prev + 1) as 1 | 2 | 3)}
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-surface border border-border hover:border-primary hover:text-primary transition-all rounded-xl text-xs font-bold text-textPrimary"
+              className="flex items-center gap-1.5 px-5 py-2.5 bg-white/5 border border-white/5 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all rounded-xl text-xs font-bold text-textPrimary active:scale-95"
             >
               Continue <ChevronRight size={16} />
             </button>

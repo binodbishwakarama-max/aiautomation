@@ -10,18 +10,20 @@ interface UsageAndAuditCardsProps {
 export default function UsageAndAuditCards({ usageEvents, auditLogs }: UsageAndAuditCardsProps) {
   return (
     <section className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-      <div className="bg-surface border border-border p-6 rounded-card">
-        <h2 className="text-lg font-bold text-textPrimary mb-4">Recent Usage</h2>
+      <div className="glass-card p-8 rounded-card shadow-lg">
+        <h2 className="text-lg font-bold text-textPrimary mb-4 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent border-b border-white/5 pb-3">
+          Recent Usage
+        </h2>
         <div className="space-y-3">
           {usageEvents.length === 0 ? (
-            <div className="text-sm text-textMuted bg-background border border-border rounded-xl p-4">
+            <div className="text-sm text-textMuted bg-white/[0.01] border border-white/5 rounded-xl p-4.5">
               No metered usage events yet.
             </div>
           ) : (
             usageEvents.map((event) => (
               <div
                 key={event.id}
-                className="flex items-center justify-between gap-4 bg-background border border-border rounded-xl p-4"
+                className="flex items-center justify-between gap-4 bg-white/[0.01] border border-white/5 rounded-xl p-4.5 hover:border-white/10 transition-colors duration-300"
               >
                 <div>
                   <div className="text-sm font-semibold text-textPrimary">{event.event_type}</div>
@@ -36,18 +38,20 @@ export default function UsageAndAuditCards({ usageEvents, auditLogs }: UsageAndA
         </div>
       </div>
 
-      <div className="bg-surface border border-border p-6 rounded-card">
-        <h2 className="text-lg font-bold text-textPrimary mb-4">Audit Trail</h2>
+      <div className="glass-card p-8 rounded-card shadow-lg">
+        <h2 className="text-lg font-bold text-textPrimary mb-4 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent border-b border-white/5 pb-3">
+          Audit Trail
+        </h2>
         <div className="space-y-3">
           {auditLogs.length === 0 ? (
-            <div className="text-sm text-textMuted bg-background border border-border rounded-xl p-4">
+            <div className="text-sm text-textMuted bg-white/[0.01] border border-white/5 rounded-xl p-4.5">
               No audit events recorded yet.
             </div>
           ) : (
             auditLogs.map((log) => (
               <div
                 key={log.id}
-                className="bg-background border border-border rounded-xl p-4"
+                className="bg-white/[0.01] border border-white/5 rounded-xl p-4.5 hover:border-white/10 transition-colors duration-300"
               >
                 <div className="text-sm font-semibold text-textPrimary">{log.action}</div>
                 <div className="text-xs text-textMuted mt-1">

@@ -17,10 +17,10 @@ export default function SettingsPage() {
   if (form.loading) {
     return (
       <div className="flex flex-col gap-8 max-w-5xl mx-auto pb-16 animate-pulse">
-        <div className="h-16 bg-surface rounded-card border border-border" />
-        <div className="h-56 bg-surface rounded-card border border-border" />
-        <div className="h-96 bg-surface rounded-card border border-border" />
-        <div className="h-72 bg-surface rounded-card border border-border" />
+        <div className="h-16 glass-card rounded-card" />
+        <div className="h-56 glass-card rounded-card" />
+        <div className="h-96 glass-card rounded-card" />
+        <div className="h-72 glass-card rounded-card" />
       </div>
     );
   }
@@ -31,7 +31,7 @@ export default function SettingsPage() {
       {/* Header + Save */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-textPrimary mb-2">Configuration</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight mb-2">Configuration</h1>
           <p className="text-sm text-textMuted">
             Manage tenant-safe credentials, onboarding content, and workspace controls.
           </p>
@@ -40,7 +40,7 @@ export default function SettingsPage() {
         <button
           onClick={form.saveSettings}
           disabled={form.savingSettings || !form.canManageWorkspace}
-          className="px-6 py-2.5 bg-primary text-background font-bold rounded-xl shadow-glow-primary hover:bg-opacity-90 disabled:opacity-50 transition-all"
+          className="px-6 py-3 bg-primary text-background font-bold rounded-xl shadow-glow-primary hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
         >
           {form.savingSettings ? "Saving..." : "Save Changes"}
         </button>
@@ -48,12 +48,12 @@ export default function SettingsPage() {
 
       {/* Setup Progress Banner */}
       {!form.storedAccessTokenLast4 && form.canManageWorkspace && (
-        <section className="bg-amber-500/10 border border-amber-500/30 p-5 rounded-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <section className="bg-amber-500/5 border border-amber-500/10 p-6 rounded-card flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-md">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="text-amber-500 mt-0.5 shrink-0" size={20} />
+            <AlertTriangle className="text-amber-500 mt-0.5 shrink-0 animate-pulse" size={20} />
             <div>
               <h3 className="font-bold text-amber-500 mb-1">WhatsApp Not Configured</h3>
-              <p className="text-sm text-amber-500/80">
+              <p className="text-sm text-amber-500/80 leading-relaxed">
                 You cannot receive or send messages until you provide your Meta WhatsApp API credentials. Please fill out the WhatsApp Credentials section below.
               </p>
             </div>
@@ -62,20 +62,20 @@ export default function SettingsPage() {
       )}
 
       {/* Security Banner */}
-      <section className="bg-surface border border-border p-5 rounded-card flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <section className="glass-card p-6 rounded-card flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-textPrimary font-semibold">
             <Shield size={18} className="text-primary" />
             Workspace Security
           </div>
           <p className="text-sm text-textMuted mt-1">
-            Active workspace: {form.activeWorkspace?.name}. Your role is{" "}
-            <span className="text-textPrimary capitalize">{form.role || "member"}</span>.
+            Active workspace: <span className="text-textPrimary font-medium">{form.activeWorkspace?.name}</span>. Your role is{" "}
+            <span className="text-primary font-medium capitalize">{form.role || "member"}</span>.
           </p>
         </div>
 
         {!form.canManageWorkspace && (
-          <div className="px-4 py-3 rounded-xl bg-background border border-border text-sm text-textMuted">
+          <div className="px-4 py-3 rounded-xl bg-white/[0.01] border border-white/5 text-sm text-textMuted select-none">
             This page is read-only for agents. Ask an owner or admin to rotate credentials.
           </div>
         )}
@@ -83,23 +83,23 @@ export default function SettingsPage() {
 
       {/* Plan Summary */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface border border-border p-5 rounded-card">
-          <div className="flex items-center gap-2 text-textPrimary font-semibold mb-2">
-            <Wallet size={18} className="text-primary" />
-            Plan
+        <div className="glass-card p-6 rounded-card">
+          <div className="flex items-center gap-2 text-textMuted font-semibold text-xs uppercase tracking-wider mb-2">
+            <Wallet size={14} className="text-primary/70" />
+            Workspace Plan
           </div>
-          <div className="text-2xl font-bold text-textPrimary capitalize">
+          <div className="text-2xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent capitalize">
             {form.activeWorkspace?.planKey || "starter"}
           </div>
         </div>
-        <div className="bg-surface border border-border p-5 rounded-card">
-          <div className="text-sm text-textMuted mb-2">Seat limit</div>
+        <div className="glass-card p-6 rounded-card">
+          <div className="text-xs text-textMuted font-semibold uppercase tracking-wider mb-2">Seat Limit</div>
           <div className="text-2xl font-bold text-textPrimary">
             {form.activeWorkspace?.seatLimit || 0}
           </div>
         </div>
-        <div className="bg-surface border border-border p-5 rounded-card">
-          <div className="text-sm text-textMuted mb-2">Monthly message limit</div>
+        <div className="glass-card p-6 rounded-card">
+          <div className="text-xs text-textMuted font-semibold uppercase tracking-wider mb-2">Monthly Messages</div>
           <div className="text-2xl font-bold text-textPrimary">
             {form.activeWorkspace?.monthlyMessageLimit || 0}
           </div>
