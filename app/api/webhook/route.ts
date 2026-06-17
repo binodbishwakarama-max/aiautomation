@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import { processAiReply } from '@/lib/ai-service';
 import { logger } from '@/lib/logger';
 import { recordUsageEvent } from '@/lib/ops';
 import { getWorkspaceSecretsOrThrow } from '@/lib/server-workspace';

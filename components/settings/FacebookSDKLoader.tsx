@@ -2,6 +2,12 @@
 
 import Script from "next/script";
 
+interface FBWindow {
+  FB?: {
+    init: (config: { appId?: string; cookie?: boolean; xfbml?: boolean; version?: string }) => void;
+  };
+}
+
 export default function FacebookSDKLoader() {
   const appId = process.env.NEXT_PUBLIC_META_APP_ID;
 
@@ -15,10 +21,9 @@ export default function FacebookSDKLoader() {
       strategy="afterInteractive"
       onLoad={() => {
         try {
-          // @ts-ignore
-          if (window.FB) {
-            // @ts-ignore
-            window.FB.init({
+          const fb = (window as unknown as FBWindow).FB;
+          if (fb) {
+            fb.init({
               appId: appId,
               cookie: true,
               xfbml: true,

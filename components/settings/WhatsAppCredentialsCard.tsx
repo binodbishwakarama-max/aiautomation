@@ -69,18 +69,26 @@ export default function WhatsAppCredentialsCard({
   const [connectingOauth, setConnectingOauth] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
 
+interface FBWindow {
+  FB?: {
+    login: (
+      callback: (response: { authResponse?: { code?: string } }) => void,
+      options?: { config_id?: string; response_type?: string; override_default_response_type?: boolean }
+    ) => void;
+  };
+}
+
   const handleFacebookConnect = () => {
-    // @ts-ignore
-    if (!window.FB) {
+    const fb = (window as unknown as FBWindow).FB;
+    if (!fb) {
       setOauthError("Facebook SDK not loaded. Please wait a moment or configure manually.");
       return;
     }
     setOauthError(null);
     setConnectingOauth(true);
 
-    // @ts-ignore
-    window.FB.login(
-      async (response: any) => {
+    fb.login(
+      async (response: { authResponse?: { code?: string } }) => {
         if (response.authResponse && response.authResponse.code) {
           const code = response.authResponse.code;
           try {
@@ -96,6 +104,7 @@ export default function WhatsAppCredentialsCard({
               setOauthError(data.error || "Failed to exchange authorization code.");
             }
           } catch (err) {
+            console.error("WhatsApp OAuth exchange error:", err);
             setOauthError("An unexpected error occurred during setup.");
           } finally {
             setConnectingOauth(false);
