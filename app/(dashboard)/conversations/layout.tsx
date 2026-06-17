@@ -102,30 +102,30 @@ export default function ConversationsLayout({ children }: { children: React.Reac
           isRootRoute ? "flex" : "hidden xl:flex"
         )}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-textPrimary">Inbox</h1>
+        <div className="flex justify-between items-center mb-4 pt-2">
+          <h1 className="text-xs font-bold text-textPrimary uppercase tracking-wider">Inbox</h1>
         </div>
         
-        <div className="relative w-full mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" size={16} />
+        <div className="relative w-full mb-3">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-textMuted" size={14} />
           <input 
             type="text" 
             placeholder="Search messages..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-lg text-sm text-textPrimary focus:outline-none focus:border-primary focus:shadow-glow-primary transition-all"
+            className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-lg text-xs text-textPrimary focus:outline-none focus:border-border/80 transition-colors"
           />
         </div>
 
-        <div className="flex bg-background border border-border rounded-lg p-1 mb-4">
+        <div className="flex bg-[#0e0e14] border border-border rounded-lg p-0.5 mb-3">
           {(["All", "active", "escalated", "resolved"] as FilterTab[]).map(tab => (
             <button 
               key={tab}
               onClick={() => setFilter(tab)}
               className={cn(
-                "flex-1 py-1.5 text-xs font-medium rounded-md capitalize transition-all",
+                "flex-1 py-1 text-[10px] font-semibold rounded-md capitalize transition-colors",
                 filter === tab 
-                  ? "bg-surface text-primary shadow-sm" 
+                  ? "bg-white/[0.04] text-textPrimary border border-border/60" 
                   : "text-textMuted hover:text-textPrimary"
               )}
             >
@@ -134,15 +134,15 @@ export default function ConversationsLayout({ children }: { children: React.Reac
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-2 pb-20 xl:pb-0 pr-1 custom-scrollbar">
+        <div className="flex-grow overflow-y-auto space-y-1 pb-20 xl:pb-0 pr-1 custom-scrollbar">
           {loading || workspaceLoading ? (
             <div className="flex flex-col gap-2 animate-pulse">
-              {[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-surface rounded-lg"></div>)}
+              {[1,2,3,4,5].map(i => <div key={i} className="h-14 bg-white/[0.02] rounded-lg"></div>)}
             </div>
           ) : filteredData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <MessageSquareOff size={32} className="mb-3 text-border" />
-              <p className="text-sm text-textMuted">No conversations found</p>
+              <MessageSquareOff size={24} className="mb-2 text-textMuted" />
+              <p className="text-xs text-textMuted">No conversations found</p>
             </div>
           ) : (
             <AnimatePresence>
@@ -152,33 +152,33 @@ export default function ConversationsLayout({ children }: { children: React.Reac
                   <motion.div
                     key={conv.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
                   >
                     <Link 
                       href={`/conversations/${conv.id}`}
                       className={cn(
-                        "flex flex-col p-3 rounded-lg border transition-all cursor-pointer block",
+                        "flex flex-col p-2.5 rounded-lg border transition-colors cursor-pointer block",
                         isActive 
-                          ? "bg-primary/5 border-primary/30 shadow-glow-primary/10" 
-                          : "bg-surface border-transparent hover:border-border hover:bg-surface/80"
+                          ? "bg-white/[0.04] border-border text-textPrimary" 
+                          : "bg-transparent border-transparent hover:bg-white/[0.01]"
                       )}
                     >
-                      <div className="flex justify-between items-start mb-1">
+                      <div className="flex justify-between items-start mb-0.5">
                         <span className={cn(
-                          "font-semibold text-sm truncate pr-2",
-                          isActive ? "text-primary" : "text-textPrimary"
+                          "font-semibold text-xs truncate pr-2",
+                          isActive ? "text-textPrimary" : "text-textMuted group-hover:text-textPrimary"
                         )}>
                           {conv.customer_name || maskPhone(conv.customer_phone)}
                         </span>
-                        <div className="flex items-center text-[10px] text-textMuted whitespace-nowrap shrink-0 pt-0.5">
+                        <div className="flex items-center text-[9px] text-textMuted whitespace-nowrap shrink-0 pt-0.5 font-mono">
                           {conv.last_message_at ? formatDistanceToNow(new Date(conv.last_message_at)) : 'Now'}
                         </div>
                       </div>
                       
-                      <p className="text-xs text-textMuted truncate mb-2">
+                      <p className="text-[11px] text-textMuted truncate mb-1.5">
                         {conv.last_message || "New conversation started"}
                       </p>
 

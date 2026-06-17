@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageSquare, Users, Settings, Wifi } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Users, Settings } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -15,15 +15,19 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-[240px] bg-surface/40 border-r border-white/5 backdrop-blur-xl h-full text-textPrimary shrink-0">
-        <div className="p-6">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-primary bg-clip-text text-transparent flex items-center gap-2 tracking-tight">
-            ReplySync<span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          </h1>
+      {/* Desktop Sidebar (Linear-style dense sidebar) */}
+      <aside className="hidden md:flex flex-col w-[220px] bg-[#0c0c12] border-r border-border h-full text-textPrimary shrink-0">
+        
+        {/* Brand Header */}
+        <div className="h-16 px-6 flex items-center justify-between border-b border-border/40">
+          <div className="flex items-center gap-2">
+            <span className="font-sans font-bold text-sm tracking-tight text-textPrimary">ReplySync</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          </div>
         </div>
         
-        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+        {/* Navigation items list */}
+        <nav className="flex-grow px-3 py-4 space-y-1 overflow-y-auto">
           {links.map((link) => {
             const Icon = link.icon;
             const isActive = pathname.startsWith(link.href);
@@ -31,29 +35,33 @@ export default function Sidebar() {
               <Link 
                 key={link.name} 
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 active:scale-95 ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors text-xs font-medium ${
                   isActive 
-                    ? "bg-primary/10 text-primary border border-primary/20 shadow-glow-primary" 
-                    : "text-textMuted border border-transparent hover:bg-white/5 hover:border-white/5 hover:text-textPrimary"
+                    ? "bg-white/[0.04] text-textPrimary border border-border/80" 
+                    : "text-textMuted border border-transparent hover:bg-white/[0.02] hover:text-textPrimary"
                 }`}
               >
-                <Icon size={18} className="shrink-0" />
-                <span className="font-medium text-sm">{link.name}</span>
+                <Icon size={14} className={isActive ? "text-primary" : "text-textMuted"} />
+                <span>{link.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/5">
-          <div className="flex items-center justify-center gap-2.5 px-4 py-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)]">
-            <Wifi size={14} className="animate-pulse" />
-            <span className="text-xs font-semibold tracking-wide uppercase">System Active</span>
+        {/* Footer Area with Muted Active Status */}
+        <div className="p-4 border-t border-border/40">
+          <div className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] border border-border/60 rounded-lg">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
+            </span>
+            <span className="text-[10px] font-mono text-textMuted uppercase tracking-wider">Cloud Connected</span>
           </div>
         </div>
       </aside>
 
-      {/* Mobile Bottom Nav (Floating Glass Bar) */}
-      <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-surface/75 border border-white/5 backdrop-blur-xl rounded-2xl flex items-center justify-around p-2 z-50 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.5)] pb-safe">
+      {/* Mobile Bottom Navigation (Quiet, Low Profile) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0c0c12] border-t border-border flex items-center justify-around p-1 z-50 pb-safe">
         {links.map((link) => {
           const Icon = link.icon;
           const isActive = pathname.startsWith(link.href);
@@ -61,14 +69,14 @@ export default function Sidebar() {
             <Link 
               key={link.name} 
               href={link.href}
-              className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all duration-300 active:scale-90 ${
+              className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-lg transition-colors ${
                 isActive 
-                  ? "text-primary bg-primary/10 border border-primary/15" 
-                  : "text-textMuted hover:text-textPrimary"
+                  ? "text-primary bg-white/[0.02]" 
+                  : "text-textMuted"
               }`}
             >
-              <Icon size={18} />
-              <span className="text-[10px] font-semibold tracking-wide">{link.name}</span>
+              <Icon size={16} />
+              <span className="text-[9px] font-medium tracking-tight">{link.name}</span>
             </Link>
           );
         })}

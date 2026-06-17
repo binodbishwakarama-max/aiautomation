@@ -19,41 +19,51 @@ export default function TopBar() {
   };
 
   return (
-    <header className="h-20 bg-background/30 border-b border-white/5 backdrop-blur-xl flex items-center justify-between px-8 z-20">
-      <h2 className="text-xl font-bold capitalize bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent tracking-tight">
+    <header className="h-16 bg-[#08080c] border-b border-border flex items-center justify-between px-6 z-20 shrink-0">
+      
+      {/* Title */}
+      <h2 className="text-sm font-bold text-textPrimary tracking-tight">
         {pageTitle}
       </h2>
       
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center gap-4">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/5 text-[10px] uppercase tracking-[0.18em] font-bold text-textMuted rounded-xl select-none">
-            <Shield size={12} className="text-primary/70" />
+        
+        {/* Role & Workspace Select */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.02] border border-border text-[9px] uppercase tracking-wider font-bold text-textMuted rounded-md select-none">
+            <Shield size={10} className="text-primary" />
             {role || "member"}
           </div>
 
-          <select
-            value={activeWorkspaceId || ""}
-            onChange={(event) => switchWorkspace(event.target.value)}
-            disabled={loading || workspaces.length === 0}
-            className="min-w-[220px] bg-surface/50 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary/40 focus:border-primary/40 transition-all select-none"
-          >
-            {workspaces.map((workspace) => (
-              <option key={workspace.businessId} value={workspace.businessId} className="bg-surface text-textPrimary">
-                {workspace.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={activeWorkspaceId || ""}
+              onChange={(event) => switchWorkspace(event.target.value)}
+              disabled={loading || workspaces.length === 0}
+              className="appearance-none bg-white/[0.02] border border-border rounded-lg pl-3 pr-8 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-border/80 transition-colors cursor-pointer select-none font-medium min-w-[180px]"
+            >
+              {workspaces.map((workspace) => (
+                <option key={workspace.businessId} value={workspace.businessId} className="bg-[#0e0e14] text-textPrimary">
+                  {workspace.name}
+                </option>
+              ))}
+            </select>
+            {/* Custom select dropdown pointer indicator */}
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-textMuted pointer-events-none">▼</span>
+          </div>
         </div>
 
-        <div className="w-10 h-10 rounded-full bg-surface/50 border border-white/5 flex items-center justify-center text-textMuted overflow-hidden hover:border-white/15 transition-colors duration-300">
-          <User size={18} />
+        {/* User Icon indicator */}
+        <div className="w-8 h-8 rounded-full bg-white/[0.02] border border-border flex items-center justify-center text-textMuted overflow-hidden">
+          <User size={14} />
         </div>
 
+        {/* Sign Out Button */}
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/5 text-textMuted hover:text-red-400 hover:border-red-400/20 hover:bg-red-400/5 active:scale-95 transition-all duration-300 text-sm font-medium"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-textMuted hover:text-red-400 hover:border-red-400/20 hover:bg-red-400/5 transition-colors font-medium"
         >
-          <LogOut size={14} />
+          <LogOut size={12} />
           <span className="hidden sm:inline">Sign out</span>
         </button>
       </div>

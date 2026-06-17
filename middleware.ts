@@ -62,8 +62,10 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/forgot-password' ||
     request.nextUrl.pathname === '/reset-password'
 
+  const isPublicRoute = request.nextUrl.pathname === '/'
+
   // If no user and asking for protected route -> Send to login
-  if (!user && !isAuthRoute) {
+  if (!user && !isAuthRoute && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     return NextResponse.redirect(loginUrl)

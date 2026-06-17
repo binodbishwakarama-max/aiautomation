@@ -195,32 +195,32 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
   }
 
   return (
-    <div className="flex h-full w-full bg-surface border border-border rounded-xl overflow-hidden relative">
+    <div className="flex h-full w-full bg-[#08080c] overflow-hidden relative">
       
-      {/* Middle Column: Chat Thread (50% overall width on desktop) */}
-      <div className="flex-1 flex flex-col h-full min-w-0 border-r border-border relative">
+      {/* Middle Column: Chat Thread */}
+      <div className="flex-1 flex flex-col h-full min-w-0 border-r border-border/40 relative">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-border bg-background/50 backdrop-blur-sm z-10 flex items-center justify-between shrink-0 h-16">
+        <div className="px-6 border-b border-border bg-[#08080c] flex items-center justify-between shrink-0 h-16">
           <div className="flex items-center gap-3 w-full">
-            <Link href="/conversations" className="xl:hidden p-2 -ml-2 mr-1 text-textMuted hover:text-textPrimary rounded-lg hover:bg-surface transition-colors cursor-pointer block">
-              <ChevronLeft size={20} />
+            <Link href="/conversations" className="xl:hidden p-1.5 -ml-1 text-textMuted hover:text-textPrimary rounded-md hover:bg-white/[0.04] transition-colors cursor-pointer block">
+              <ChevronLeft size={16} />
             </Link>
             
-            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0">
-              <User size={18} />
+            <div className="w-8 h-8 rounded-full bg-white/[0.02] border border-border flex items-center justify-center text-textMuted shrink-0">
+              <User size={14} />
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-textPrimary text-sm truncate leading-tight">
+            <div className="flex-grow min-w-0">
+              <h3 className="font-semibold text-textPrimary text-xs truncate leading-tight">
                 {conversation.customer_name || "Customer"}
               </h3>
-              <p className="text-xs text-textMuted font-mono truncate">{conversation.customer_phone}</p>
+              <p className="text-[10px] text-textMuted font-mono truncate">{conversation.customer_phone}</p>
             </div>
             
             <button 
               onClick={() => setShowInfoPanel(!showInfoPanel)}
-              className="lg:hidden p-2 text-textMuted hover:text-secondary rounded-lg hover:bg-secondary/10 transition-colors"
+              className="lg:hidden p-1.5 text-textMuted hover:text-textPrimary rounded-md hover:bg-white/[0.04] transition-colors"
             >
-              <Info size={20} />
+              <Info size={16} />
             </button>
           </div>
         </div>
@@ -232,20 +232,20 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="px-4 py-2 bg-red-500/10 border-b border-red-500/30 flex items-center gap-2 text-red-500 text-xs font-semibold shrink-0"
+              className="px-6 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center gap-2 text-red-400 text-xs font-semibold shrink-0"
             >
-              <AlertCircle size={14} />
+              <AlertCircle size={12} />
               This conversation needs your attention
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Message Feed */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
           {messages.length === 0 ? (
              <div className="text-center text-textMuted py-20 flex flex-col items-center justify-center">
-              <MessageSquare className="w-10 h-10 mb-4 opacity-30" />
-              <p className="text-sm">This is the start of the conversation.</p>
+              <MessageSquare className="w-8 h-8 mb-3 opacity-30 text-textMuted" />
+              <p className="text-xs">This is the start of the conversation.</p>
             </div>
           ) : (
             <AnimatePresence initial={false}>
@@ -256,20 +256,20 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
                   <motion.div
                     key={msg.id}
                     layout
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     className={`flex flex-col ${isAI ? "items-end" : "items-start"}`}
                   >
                     <div 
-                      className={`max-w-[85%] md:max-w-[75%] px-4 py-2.5 rounded-2xl ${
+                      className={`max-w-[80%] md:max-w-[70%] px-3.5 py-2 rounded-xl text-xs leading-relaxed ${
                         isAI 
-                          ? "bg-primary/10 text-primary border border-primary/20 rounded-tr-sm" 
-                          : "bg-[#1E1E2E] text-textPrimary border border-border rounded-tl-sm"
+                          ? "bg-white/[0.03] text-primary border border-primary/20 rounded-tr-none" 
+                          : "bg-white/[0.01] text-textPrimary border border-border rounded-tl-none"
                       }`}
                     >
-                      <p className="whitespace-pre-wrap text-[14px] leading-[1.4] tracking-tight">{msg.content}</p>
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
                     </div>
-                    <span className="text-[10px] text-textMuted mt-1 mx-1.5 font-medium">
+                    <span className="text-[9px] text-textMuted mt-1 mx-1.5 font-mono">
                       {format(new Date(msg.sent_at), "h:mm a")}{" "}
                       {isAI ? <span className="opacity-70">• {isManualReply ? "Team Reply" : "AI"}</span> : ""}
                     </span>
@@ -282,8 +282,8 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
         </div>
 
         {/* Reply Input Area */}
-        <div className="p-4 border-t border-border bg-background shrink-0">
-          <div className="relative flex items-end gap-2 bg-surface border border-border rounded-xl focus-within:border-secondary focus-within:shadow-glow-secondary/20 transition-all p-1">
+        <div className="p-4 border-t border-border bg-[#08080c] shrink-0">
+          <div className="relative flex items-end gap-2 bg-white/[0.01] border border-border rounded-lg focus-within:border-border/80 transition-colors p-1">
              <textarea
                 value={replyInput}
                 onChange={(event) => setReplyInput(event.target.value)}
@@ -294,45 +294,45 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
                   }
                 }}
                 placeholder="Type a manual reply... (Enter to send)"
-                className="flex-1 bg-transparent resize-none outline-none text-sm text-textPrimary px-3 py-2.5 min-h-[44px] max-h-[150px] custom-scrollbar leading-relaxed"
+                className="flex-grow bg-transparent resize-none outline-none text-xs text-textPrimary px-3 py-2 min-h-[38px] max-h-[120px] custom-scrollbar leading-normal"
                 rows={1}
               />
               <button
                 onClick={sendManualReply}
                 disabled={sendingReply || !replyInput.trim()}
-                className="shrink-0 w-10 h-10 m-0.5 rounded-lg bg-secondary text-white flex items-center justify-center hover:bg-secondary/90 disabled:opacity-50 disabled:bg-surface disabled:text-textMuted transition-all"
+                className="shrink-0 w-8 h-8 m-0.5 rounded-md bg-primary text-background flex items-center justify-center hover:bg-primary/95 disabled:opacity-50 disabled:bg-transparent disabled:text-textMuted transition-colors"
               >
-                {sendingReply ? <Spinner size="sm" /> : <Send size={16} className="-ml-0.5 mt-0.5" />}
+                {sendingReply ? <Spinner size="sm" /> : <Send size={12} />}
               </button>
           </div>
         </div>
       </div>
 
-      {/* Right Column: Lead Info & Status Actions (25% overall width on desktop) */}
+      {/* Right Column: Lead Info & Status Actions */}
       <div className={cn(
-        "absolute lg:static top-0 right-0 h-full w-[320px] bg-background lg:bg-surface shrink-0 z-20 flex flex-col transition-transform duration-300 transform",
+        "absolute lg:static top-0 right-0 h-full w-[300px] bg-[#0c0c12] lg:bg-transparent shrink-0 z-20 flex flex-col transition-transform duration-300 transform border-l border-border/40",
         showInfoPanel ? "translate-x-0" : "translate-x-full lg:translate-x-0 shadow-2xl lg:shadow-none"
       )}>
-        <div className="p-4 border-b border-border bg-background/50 backdrop-blur-sm lg:hidden flex items-center justify-between">
-          <h3 className="font-bold text-textPrimary">Lead Information</h3>
-          <button onClick={() => setShowInfoPanel(false)} className="text-textMuted p-1">✕</button>
+        <div className="p-4 border-b border-border bg-[#0c0c12] lg:hidden flex items-center justify-between">
+          <h3 className="text-xs font-bold text-textPrimary uppercase tracking-wider">Lead Information</h3>
+          <button onClick={() => setShowInfoPanel(false)} className="text-textMuted p-1 text-xs">✕</button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+        <div className="flex-grow overflow-y-auto p-5 space-y-6 custom-scrollbar">
           
           {/* Status Actions */}
-          <div className="space-y-3">
-             <h4 className="text-xs font-bold text-textMuted uppercase tracking-wider flex items-center gap-2">
-              <CheckCircle size={14} className="text-primary"/> Resolution
+          <div className="space-y-2">
+             <h4 className="text-[10px] font-bold text-textMuted uppercase tracking-wider flex items-center gap-1.5">
+              <CheckCircle size={12} className="text-primary"/> Resolution
             </h4>
             
             <button 
               onClick={() => updateStatus("resolved")}
               disabled={updatingStatus || conversation.status === "resolved"}
-              className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex justify-center items-center gap-2 ${
+              className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-2 ${
                 conversation.status === "resolved" 
-                  ? "bg-gray-500/10 text-gray-500 border border-gray-500/20 cursor-not-allowed"
-                  : "bg-primary text-background hover:opacity-90 shadow-glow-primary"
+                  ? "bg-white/[0.02] text-textMuted border border-border cursor-not-allowed"
+                  : "bg-primary text-background hover:bg-primary/90"
               }`}
             >
               {updatingStatus && conversation.status !== "resolved" ? <Spinner size="sm" /> : "Mark as Resolved"}
@@ -341,46 +341,46 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
             <button 
               onClick={() => updateStatus("escalated")}
               disabled={updatingStatus || conversation.status === "escalated"}
-              className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex justify-center items-center gap-2 ${
+              className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-colors flex justify-center items-center gap-2 ${
                 conversation.status === "escalated" 
-                  ? "bg-gray-500/10 text-gray-500 border border-gray-500/20 cursor-not-allowed"
-                  : "bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20"
+                  ? "bg-white/[0.02] text-textMuted border border-border cursor-not-allowed"
+                  : "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
               }`}
             >
               {updatingStatus && conversation.status !== "escalated" ? <Spinner size="sm" /> : "Escalate to Owner"}
             </button>
           </div>
 
-          <div className="h-px bg-border w-full"></div>
+          <div className="h-px bg-border/40 w-full"></div>
 
           {/* Customer Profile */}
           <div className="space-y-4">
-             <h4 className="text-xs font-bold text-textMuted uppercase tracking-wider flex items-center gap-2">
-              <Info size={14} className="text-secondary"/> Customer Profile
+             <h4 className="text-[10px] font-bold text-textMuted uppercase tracking-wider flex items-center gap-1.5">
+              <Info size={12} className="text-textMuted"/> Customer Profile
             </h4>
             
             <div>
-              <span className="block text-[10px] text-textMuted mb-1 font-semibold uppercase tracking-wider">Phone Number</span>
-              <span className="text-sm font-medium text-textPrimary font-mono">{conversation.customer_phone}</span>
+              <span className="block text-[9px] text-textMuted mb-1 font-semibold uppercase tracking-wider">Phone Number</span>
+              <span className="text-xs font-medium text-textPrimary font-mono">{conversation.customer_phone}</span>
             </div>
               
             {lead ? (
               <>
                 <div>
-                  <span className="block text-[10px] text-textMuted mb-1 font-semibold uppercase tracking-wider">Lead Status</span>
-                  <span className="inline-block px-2 py-0.5 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 capitalize font-medium">
+                  <span className="block text-[9px] text-textMuted mb-1 font-semibold uppercase tracking-wider">Lead Status</span>
+                  <span className="inline-block px-2 py-0.5 bg-white/[0.04] border border-border text-textPrimary text-[10px] rounded capitalize font-medium">
                     {lead.status}
                   </span>
                 </div>
                 <div>
-                  <span className="block text-[10px] text-textMuted mb-1 font-semibold uppercase tracking-wider">Internal Notes</span>
-                  <div className="text-xs text-textPrimary leading-relaxed whitespace-pre-wrap max-h-48 overflow-y-auto custom-scrollbar">
+                  <span className="block text-[9px] text-textMuted mb-1 font-semibold uppercase tracking-wider">Internal Notes</span>
+                  <div className="text-[11px] text-textPrimary leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
                     {lead.notes || <span className="text-textMuted italic">No notes captured yet.</span>}
                   </div>
                 </div>
               </>
             ) : (
-              <div className="p-3 bg-surface border border-border/50 rounded-lg text-xs text-textMuted text-center">
+              <div className="p-3 bg-white/[0.01] border border-border rounded-lg text-[11px] text-textMuted text-center">
                 This contact is not currently in your lead pipeline.
               </div>
             )}
@@ -388,7 +388,7 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
 
           {/* Add Note Input */}
           <div className="pt-2">
-            <span className="block text-[10px] text-textMuted mb-2 font-semibold uppercase tracking-wider">Add Note</span>
+            <span className="block text-[9px] text-textMuted mb-2 font-semibold uppercase tracking-wider">Add Note</span>
             <div className="flex gap-2">
               <input 
                 type="text" 
@@ -396,14 +396,14 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
                 onChange={(e) => setNoteInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && saveNote()}
                 placeholder="Type note..."
-                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-secondary transition-colors"
+                className="flex-grow bg-white/[0.01] border border-border rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-border/80 transition-colors"
               />
               <button 
                 onClick={saveNote}
                 disabled={sendingNote || !noteInput.trim()}
-                className="w-8 h-8 flex items-center justify-center shrink-0 bg-secondary/10 text-secondary rounded-lg hover:bg-secondary/20 disabled:opacity-50 transition-colors"
+                className="w-7 h-7 flex items-center justify-center shrink-0 bg-white/[0.04] border border-border hover:bg-white/[0.06] text-textPrimary rounded-lg disabled:opacity-50 transition-colors"
               >
-                {sendingNote ? <Spinner size="sm"/> : <Send size={14} />}
+                {sendingNote ? <Spinner size="sm"/> : <Send size={10} />}
               </button>
             </div>
           </div>
