@@ -6,7 +6,7 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "minimal-ui"],
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#0B1215",
   "theme_color": "#0B1215",
   "orientation": "portrait",
