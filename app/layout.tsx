@@ -14,6 +14,15 @@ export const metadata: Metadata = {
     title: 'ReplySync',
     statusBarStyle: 'black-translucent',
   },
+  icons: {
+    icon: [
+      { url: '/icon', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: ['/icon'],
+  },
 };
 
 export const viewport: Viewport = {
