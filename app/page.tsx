@@ -102,7 +102,7 @@ export default function LandingPage() {
             <Link href="/login" className="text-xs font-medium text-textMuted hover:text-textPrimary px-3 py-2 transition-colors min-h-[44px] flex items-center">
               Sign In
             </Link>
-            <Link href="/signup" className="btn-primary text-xs min-h-[44px] flex items-center justify-center px-4">
+            <Link href="/login" className="btn-primary text-xs min-h-[44px] flex items-center justify-center px-4">
               <span>Connect WhatsApp</span>
               <ArrowRight size={14} className="ml-1.5 shrink-0" />
             </Link>
@@ -185,7 +185,7 @@ export default function LandingPage() {
                 Sign In
               </Link>
               <Link 
-                href="/signup" 
+                href="/login" 
                 onClick={() => setMobileMenuOpen(false)}
                 className="btn-primary text-center text-sm min-h-[44px] flex items-center justify-center font-bold"
               >
@@ -216,7 +216,7 @@ export default function LandingPage() {
 
             {/* Touch CTAs (Full width on mobile, 48px height) */}
             <div className="flex flex-col sm:flex-row gap-3.5 mb-8 w-full sm:w-auto justify-center">
-              <Link href="/signup" className="btn-primary py-3.5 px-6 text-sm font-bold min-h-[48px] flex items-center justify-center w-full sm:w-auto">
+              <Link href="/login" className="btn-primary py-3.5 px-6 text-sm font-bold min-h-[48px] flex items-center justify-center w-full sm:w-auto">
                 <span>Start Free Dispatch Trial</span>
                 <ArrowRight size={16} className="ml-2 shrink-0" />
               </Link>
@@ -353,7 +353,7 @@ export default function LandingPage() {
                 <h4 className="text-base font-bold text-textPrimary">Ready to connect your Meta WhatsApp API?</h4>
                 <p className="text-xs text-textMuted mt-1">Set up your workspace in under 2 minutes. No credit card required.</p>
               </div>
-              <Link href="/signup" className="btn-primary py-3 px-6 text-xs font-bold shrink-0 min-h-[44px] flex items-center justify-center">
+              <Link href="/login" className="btn-primary py-3 px-6 text-xs font-bold shrink-0 min-h-[44px] flex items-center justify-center">
                 <span>Start Free Setup</span>
                 <ArrowRight size={14} className="ml-1.5" />
               </Link>
@@ -675,7 +675,7 @@ export default function LandingPage() {
                     </li>
                   </ul>
                 </div>
-                <Link href="/signup" className="btn-secondary text-center text-xs min-h-[44px] flex items-center justify-center font-semibold">
+                <Link href="/login" className="btn-secondary text-center text-xs min-h-[44px] flex items-center justify-center font-semibold">
                   Get Starter Plan
                 </Link>
               </div>
@@ -709,7 +709,7 @@ export default function LandingPage() {
                     </li>
                   </ul>
                 </div>
-                <Link href="/signup" className="btn-primary text-center text-xs min-h-[44px] flex items-center justify-center font-bold">
+                <Link href="/login" className="btn-primary text-center text-xs min-h-[44px] flex items-center justify-center font-bold">
                   Start Growth Pro
                 </Link>
               </div>
@@ -736,7 +736,7 @@ export default function LandingPage() {
                     </li>
                   </ul>
                 </div>
-                <Link href="/signup" className="btn-secondary text-center text-xs min-h-[44px] flex items-center justify-center font-semibold">
+                <Link href="/login" className="btn-secondary text-center text-xs min-h-[44px] flex items-center justify-center font-semibold">
                   Contact Sales
                 </Link>
               </div>
