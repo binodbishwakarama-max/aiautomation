@@ -157,27 +157,26 @@ export async function POST(request: Request) {
     const firstPhoneNumberId = phoneNumbers[0].id;
 
     // 5. Subscribe the WABA to our app's webhook (Tech Provider model)
-    //    This tells Meta to route all incoming messages for this WABA
-    //    to our central webhook at /api/webhook automatically.
-    const subscribeRes = await fetch(
-      `https://graph.facebook.com/v19.0/${firstWabaId}/subscribed_apps`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${finalAccessToken}`,
-          "Content-Type": "application/json",
-        },
+    try {
+      const subscribeRes = await fetch(
+        `https://graph.facebook.com/v19.0/${firstWabaId}/subscribed_apps`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${finalAccessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const subscribeData = await subscribeRes.json();
+      if (!subscribeRes.ok || subscribeData.error) {
+        logger.warn("Meta WABA webhook subscription warning (non-fatal)", { error: subscribeData.error });
+      } else {
+        logger.info("WABA subscribed to app webhook", { wabaId: firstWabaId, phoneNumberId: firstPhoneNumberId });
       }
-    );
-    const subscribeData = await subscribeRes.json();
-
-    if (!subscribeRes.ok || subscribeData.error) {
-      const errMsg = subscribeData.error?.message || "Failed to subscribe WABA to webhook.";
-      logger.error("Meta WABA webhook subscription error", { error: subscribeData.error });
-      return NextResponse.json({ error: errMsg }, { status: 400 });
+    } catch (subErr) {
+      logger.warn("Meta WABA webhook subscription fetch error (non-fatal)", { error: String(subErr) });
     }
-
-    logger.info("WABA subscribed to app webhook", { wabaId: firstWabaId, phoneNumberId: firstPhoneNumberId });
 
     // 6. Update workspace secrets in database (encrypted at rest)
     await updateWorkspaceSecrets(workspaceId, {

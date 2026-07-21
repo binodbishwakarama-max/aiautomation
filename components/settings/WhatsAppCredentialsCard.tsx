@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   CheckCircle2,
   Copy,
@@ -68,6 +68,7 @@ export default function WhatsAppCredentialsCard({
   const [showManual, setShowManual] = useState(!!storedAccessTokenLast4);
   const [connectingOauth, setConnectingOauth] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
+  const hasExchangedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -89,6 +90,11 @@ export default function WhatsAppCredentialsCard({
         // Wait until workspaceId is loaded from useWorkspace hook
         return;
       }
+
+      if (hasExchangedRef.current) {
+        return;
+      }
+      hasExchangedRef.current = true;
 
       if (state && state !== workspaceId) {
         const cleanUrl = window.location.pathname;
