@@ -13,7 +13,11 @@ import {
   Zap,
   Radio,
   Menu,
-  X
+  X,
+  ExternalLink,
+  Key,
+  Globe,
+  FileText
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 
@@ -85,6 +89,7 @@ export default function LandingPage() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs font-medium text-textMuted">
+            <a href="#how-it-works" className="hover:text-textPrimary transition-colors py-2">How It Works</a>
             <a href="#console" className="hover:text-textPrimary transition-colors py-2">Dispatch Console</a>
             <a href="#features" className="hover:text-textPrimary transition-colors py-2">Capabilities</a>
             <a href="#calculator" className="hover:text-textPrimary transition-colors py-2">Calculator</a>
@@ -117,6 +122,13 @@ export default function LandingPage() {
         {/* Mobile Navigation Drawer Dropdown */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-background px-4 pt-4 pb-6 space-y-3 flex flex-col">
+            <a 
+              href="#how-it-works" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm font-medium text-textPrimary py-3 px-3 rounded-lg bg-surface/50 border border-border flex items-center min-h-[44px]"
+            >
+              How It Works & Setup Guide
+            </a>
             <a 
               href="#console" 
               onClick={() => setMobileMenuOpen(false)}
@@ -212,6 +224,141 @@ export default function LandingPage() {
                 <span>View Live Console Simulation</span>
               </a>
             </div>
+          </div>
+        </section>
+
+        {/* HOW IT WORKS & META DEVELOPER SETUP GUIDE */}
+        <section id="how-it-works" className="py-12 sm:py-16 px-4 sm:px-6 border-b border-border bg-[#0a0f12]">
+          <div className="max-w-5xl mx-auto">
+            
+            <div className="text-center max-w-3xl mx-auto mb-10">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-accent mb-2">
+                STEP-BY-STEP SETUP GUIDE
+              </h2>
+              <p className="text-2xl sm:text-3xl font-extrabold text-textPrimary tracking-tight mb-3">
+                How ReplySync Automates WhatsApp in 4 Easy Steps
+              </p>
+              <p className="text-sm text-textMuted leading-relaxed">
+                Clear instructions on getting your Meta Developer credentials, Phone Number ID, and activating 24/7 AI dispatching.
+              </p>
+            </div>
+
+            {/* 4 Step Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              
+              {/* Step 1 */}
+              <div className="glass-card p-5 sm:p-6 rounded-xl border border-border flex flex-col justify-between gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 rounded bg-accent/10 border border-accent/20">
+                      STEP 01
+                    </span>
+                    <a 
+                      href="https://developers.facebook.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-textMuted hover:text-accent inline-flex items-center gap-1 transition-colors"
+                    >
+                      <span>developers.facebook.com</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                  <h3 className="text-base font-bold text-textPrimary flex items-center gap-2">
+                    <Globe size={18} className="text-accent shrink-0" />
+                    Create Meta Developer Account
+                  </h3>
+                  <p className="text-xs sm:text-sm text-textMuted leading-relaxed">
+                    Log in to Meta for Developers. Click <strong className="text-textPrimary">My Apps</strong> &rarr; <strong className="text-textPrimary">Create App</strong>. Select <strong className="text-textPrimary">Other &rarr; Business</strong> as your app type, then add the <strong className="text-textPrimary">WhatsApp</strong> product.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded bg-background/60 border border-border text-[11px] font-mono text-textMuted">
+                  <span className="text-accent font-bold">Requirement:</span> Meta Developer Account & Facebook Business Manager
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="glass-card p-5 sm:p-6 rounded-xl border border-border flex flex-col justify-between gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 rounded bg-accent/10 border border-accent/20">
+                      STEP 02
+                    </span>
+                    <span className="text-xs font-mono text-textMuted">Meta API Setup</span>
+                  </div>
+                  <h3 className="text-base font-bold text-textPrimary flex items-center gap-2">
+                    <Key size={18} className="text-accent shrink-0" />
+                    Get Phone Number ID & Access Token
+                  </h3>
+                  <p className="text-xs sm:text-sm text-textMuted leading-relaxed">
+                    Inside your Meta App, go to <strong className="text-textPrimary">WhatsApp &rarr; API Setup</strong>. Copy your 15-digit <strong className="text-textPrimary">Phone Number ID</strong> and generate a System User <strong className="text-textPrimary">Permanent Access Token</strong> (or temporary test token).
+                  </p>
+                </div>
+
+                <div className="p-3 rounded bg-background/60 border border-border text-[11px] font-mono text-textMuted">
+                  <span className="text-accent font-bold">Example Phone ID:</span> 104829384910293
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="glass-card p-5 sm:p-6 rounded-xl border border-border flex flex-col justify-between gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 rounded bg-accent/10 border border-accent/20">
+                      STEP 03
+                    </span>
+                    <span className="text-xs font-mono text-textMuted">ReplySync Dashboard</span>
+                  </div>
+                  <h3 className="text-base font-bold text-textPrimary flex items-center gap-2">
+                    <CheckCircle2 size={18} className="text-accent shrink-0" />
+                    Save Connection in ReplySync Settings
+                  </h3>
+                  <p className="text-xs sm:text-sm text-textMuted leading-relaxed">
+                    Log in to your ReplySync account, navigate to <strong className="text-textPrimary">Settings</strong> (<code className="text-accent font-mono text-[11px]">/settings</code>), paste your Phone Number ID and Access Token, and click <strong className="text-textPrimary">Save WhatsApp Config</strong>.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded bg-background/60 border border-border text-[11px] font-mono text-textMuted">
+                  <span className="text-accent font-bold">Security:</span> Encrypted at rest with AES-256-GCM
+                </div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="glass-card p-5 sm:p-6 rounded-xl border border-border flex flex-col justify-between gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-accent px-2.5 py-1 rounded bg-accent/10 border border-accent/20">
+                      STEP 04
+                    </span>
+                    <span className="text-xs font-mono text-textMuted">AI Knowledge Base</span>
+                  </div>
+                  <h3 className="text-base font-bold text-textPrimary flex items-center gap-2">
+                    <FileText size={18} className="text-accent shrink-0" />
+                    Add Business Rules & Launch Dispatch
+                  </h3>
+                  <p className="text-xs sm:text-sm text-textMuted leading-relaxed">
+                    Add your business FAQs, product catalog, refund policies, and pricing guide into the Knowledge Base. ReplySync starts auto-answering WhatsApp customers 24/7 with zero latency!
+                  </p>
+                </div>
+
+                <div className="p-3 rounded bg-background/60 border border-border text-[11px] font-mono text-accent">
+                  <span className="font-bold">&check; Ready:</span> Auto-answers inquiries & qualifies leads
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action CTA Box */}
+            <div className="mt-8 p-6 rounded-xl bg-surface border border-accent/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+              <div>
+                <h4 className="text-base font-bold text-textPrimary">Ready to connect your Meta WhatsApp API?</h4>
+                <p className="text-xs text-textMuted mt-1">Set up your workspace in under 2 minutes. No credit card required.</p>
+              </div>
+              <Link href="/signup" className="btn-primary py-3 px-6 text-xs font-bold shrink-0 min-h-[44px] flex items-center justify-center">
+                <span>Start Free Setup</span>
+                <ArrowRight size={14} className="ml-1.5" />
+              </Link>
+            </div>
+
           </div>
         </section>
 
