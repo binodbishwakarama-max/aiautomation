@@ -49,6 +49,84 @@ async function callGroqWithRetry(
   throw lastError;
 }
 
+async function callOpenRouter(
+  messages: Array<{ role: ChatMessageRole; content: string }>
+) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENROUTER_API_KEY is not set');
+  }
+
+  // OpenRouter free models: meta-llama/llama-3.3-70b-instruct:free, deepseek/deepseek-r1:free, qwen/qwen-2.5-72b-instruct:free
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://replysync.app',
+      'X-Title': 'ReplySync',
+    },
+    body: JSON.stringify({
+      model: 'meta-llama/llama-3.3-70b-instruct:free',
+      messages,
+      response_format: { type: 'json_object' },
+      temperature: 0.2,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`OpenRouter HTTP ${res.status}: ${errorText}`);
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('OpenRouter response content was empty');
+  }
+
+  return content;
+}
+
+async function callAiWithFallback(
+  messages: Array<{ role: ChatMessageRole; content: string }>
+): Promise<string> {
+  // 1. Primary Provider: Groq (Llama 3.1 8B Instant)
+  try {
+    const groqResponse = await callGroqWithRetry(messages);
+    const content = groqResponse.choices[0]?.message?.content;
+    if (content) {
+      return content;
+    }
+  } catch (groqError) {
+    logger.warn('Groq primary model failed. Attempting OpenRouter fallback...', {
+      error: groqError instanceof Error ? groqError.message : String(groqError),
+    });
+  }
+
+  // 2. Secondary Provider: OpenRouter (100% Free Tier Models like Llama 3.3 70B / DeepSeek R1)
+  if (process.env.OPENROUTER_API_KEY) {
+    try {
+      const openRouterContent = await callOpenRouter(messages);
+      logger.info('Successfully generated AI response via OpenRouter fallback');
+      return openRouterContent;
+    } catch (openRouterError) {
+      logger.error('OpenRouter fallback also failed', {
+        error: openRouterError instanceof Error ? openRouterError.message : String(openRouterError),
+      });
+    }
+  }
+
+  // 3. Ultimate Fallback: Return structured JSON for human escalation
+  logger.warn('All AI providers failed or unconfigured. Triggering human escalation fallback.');
+  return JSON.stringify({
+    reply: 'Thank you for reaching out! Our team has been notified and will assist you shortly.',
+    escalate: true,
+    capture_lead: false,
+    customer_name: null,
+  });
+}
+
 export async function processAiReply(conversationId: string) {
   try {
     const { data: conv, error: convError } = await supabaseAdmin
@@ -141,15 +219,10 @@ Respond in JSON format only:
   "customer_name": "string | null"
 }`;
 
-    const response = await callGroqWithRetry([
+    const rawContent = await callAiWithFallback([
       { role: 'system', content: systemPrompt },
       ...chatHistory,
     ]);
-
-    const rawContent = response.choices[0]?.message?.content;
-    if (!rawContent) {
-      throw new Error('Empty response from Groq');
-    }
 
     const cleanedContent = rawContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
     const parsed = JSON.parse(cleanedContent);
