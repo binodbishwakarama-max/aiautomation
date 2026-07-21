@@ -79,106 +79,81 @@ export async function POST(request: Request) {
 
     const finalAccessToken = longLivedData.access_token;
 
-    // 3. Use debug_token to extract the WABA ID from granular_scopes
-    const debugParams = new URLSearchParams({
-      input_token: finalAccessToken,
-      access_token: `${appId}|${appSecret}`,
-    });
+    // 3. Inspect the access token to attempt automatic extraction of WABA ID and Phone Number ID
+    let firstWabaId: string | null = null;
+    let firstPhoneNumberId: string | null = null;
 
-    const debugRes = await fetch(
-      `https://graph.facebook.com/v19.0/debug_token?${debugParams.toString()}`
-    );
-    const debugData = await debugRes.json();
-
-    if (!debugRes.ok || debugData.error) {
-      const errMsg = debugData.error?.message || "Failed to inspect access token.";
-      logger.error("Meta debug_token error", { error: debugData.error });
-      return NextResponse.json({ error: errMsg }, { status: 400 });
-    }
-
-    // Extract WABA ID from granular_scopes or target_ids
-    const granularScopes = debugData.data?.granular_scopes || [];
-    const whatsappScope = granularScopes.find(
-      (s: { scope: string; target_ids?: string[] }) =>
-        s.scope === "whatsapp_business_management" || s.scope === "whatsapp_business_messaging"
-    );
-
-    let wabaIds: string[] = whatsappScope?.target_ids || [];
-
-    if (wabaIds.length === 0 && Array.isArray(debugData.data?.target_ids)) {
-      wabaIds = debugData.data.target_ids;
-    }
-
-    if (wabaIds.length === 0) {
-      // Fallback: Query me/whatsapp_business_accounts
-      const wabaParams = new URLSearchParams({ access_token: finalAccessToken });
-      const wabaRes = await fetch(
-        `https://graph.facebook.com/v19.0/me/whatsapp_business_accounts?${wabaParams.toString()}`
-      );
-      const wabaData = await wabaRes.json();
-      if (wabaRes.ok && Array.isArray(wabaData.data) && wabaData.data.length > 0) {
-        wabaIds = wabaData.data.map((w: { id: string }) => w.id);
-      }
-    }
-
-    if (wabaIds.length === 0) {
-      logger.error("No WABA IDs found in granular_scopes or debug_token", { debugData });
-      return NextResponse.json(
-        { error: "No WhatsApp Business Accounts found. Please ensure you selected a WABA during the signup flow." },
-        { status: 400 }
-      );
-    }
-
-    // Select the first (most recently onboarded) WABA
-    const firstWabaId = wabaIds[0];
-
-    // 4. Fetch the phone numbers associated with this WABA
-    const phoneParams = new URLSearchParams({ access_token: finalAccessToken });
-    const phoneRes = await fetch(
-      `https://graph.facebook.com/v19.0/${firstWabaId}/phone_numbers?${phoneParams.toString()}`
-    );
-    const phoneData = await phoneRes.json();
-
-    if (!phoneRes.ok || phoneData.error) {
-      const errMsg = phoneData.error?.message || "Failed to query phone numbers for the WABA.";
-      logger.error("Meta WABA phone lookup error", { error: phoneData.error });
-      return NextResponse.json({ error: errMsg }, { status: 400 });
-    }
-
-    const phoneNumbers = phoneData.data || [];
-    if (phoneNumbers.length === 0) {
-      return NextResponse.json(
-        { error: "No phone numbers registered in the WhatsApp Business Account." },
-        { status: 400 }
-      );
-    }
-
-    // Select the first phone number
-    const firstPhoneNumberId = phoneNumbers[0].id;
-
-    // 5. Subscribe the WABA to our app's webhook (Tech Provider model)
     try {
-      const subscribeRes = await fetch(
-        `https://graph.facebook.com/v19.0/${firstWabaId}/subscribed_apps`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${finalAccessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const debugParams = new URLSearchParams({
+        input_token: finalAccessToken,
+        access_token: `${appId}|${appSecret}`,
+      });
+
+      const debugRes = await fetch(
+        `https://graph.facebook.com/v19.0/debug_token?${debugParams.toString()}`
       );
-      const subscribeData = await subscribeRes.json();
-      if (!subscribeRes.ok || subscribeData.error) {
-        logger.warn("Meta WABA webhook subscription warning (non-fatal)", { error: subscribeData.error });
-      } else {
-        logger.info("WABA subscribed to app webhook", { wabaId: firstWabaId, phoneNumberId: firstPhoneNumberId });
+      const debugData = await debugRes.json();
+
+      if (debugRes.ok && !debugData.error) {
+        const granularScopes = debugData.data?.granular_scopes || [];
+        const whatsappScope = granularScopes.find(
+          (s: { scope: string; target_ids?: string[] }) =>
+            s.scope === "whatsapp_business_management" || s.scope === "whatsapp_business_messaging"
+        );
+
+        let wabaIds: string[] = whatsappScope?.target_ids || [];
+
+        if (wabaIds.length === 0 && Array.isArray(debugData.data?.target_ids)) {
+          wabaIds = debugData.data.target_ids;
+        }
+
+        if (wabaIds.length === 0) {
+          const wabaParams = new URLSearchParams({ access_token: finalAccessToken });
+          const wabaRes = await fetch(
+            `https://graph.facebook.com/v19.0/me/whatsapp_business_accounts?${wabaParams.toString()}`
+          );
+          const wabaData = await wabaRes.json();
+          if (wabaRes.ok && Array.isArray(wabaData.data) && wabaData.data.length > 0) {
+            wabaIds = wabaData.data.map((w: { id: string }) => w.id);
+          }
+        }
+
+        if (wabaIds.length > 0) {
+          firstWabaId = wabaIds[0];
+
+          // Fetch phone numbers for WABA
+          const phoneParams = new URLSearchParams({ access_token: finalAccessToken });
+          const phoneRes = await fetch(
+            `https://graph.facebook.com/v19.0/${firstWabaId}/phone_numbers?${phoneParams.toString()}`
+          );
+          const phoneData = await phoneRes.json();
+
+          if (phoneRes.ok && Array.isArray(phoneData.data) && phoneData.data.length > 0) {
+            firstPhoneNumberId = phoneData.data[0].id;
+          }
+
+          // Try subscribing WABA to app webhooks (non-fatal)
+          try {
+            await fetch(
+              `https://graph.facebook.com/v19.0/${firstWabaId}/subscribed_apps`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${finalAccessToken}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+          } catch (subErr) {
+            logger.warn("Meta WABA webhook subscription warning (non-fatal)", { error: String(subErr) });
+          }
+        }
       }
-    } catch (subErr) {
-      logger.warn("Meta WABA webhook subscription fetch error (non-fatal)", { error: String(subErr) });
+    } catch (debugErr) {
+      logger.warn("Meta token metadata inspection warning (non-fatal)", { error: String(debugErr) });
     }
 
-    // 6. Update workspace secrets in database (encrypted at rest)
+    // 4. Update workspace secrets in database (encrypted at rest)
     await updateWorkspaceSecrets(workspaceId, {
       whatsappNumberId: firstPhoneNumberId,
       accessToken: finalAccessToken,
