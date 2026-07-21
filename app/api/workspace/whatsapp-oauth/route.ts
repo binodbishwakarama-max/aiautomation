@@ -80,8 +80,13 @@ export async function POST(request: Request) {
     const finalAccessToken = longLivedData.access_token;
 
     // 3. Use debug_token to extract the WABA ID from granular_scopes
+    const debugParams = new URLSearchParams({
+      input_token: finalAccessToken,
+      access_token: `${appId}|${appSecret}`,
+    });
+
     const debugRes = await fetch(
-      `https://graph.facebook.com/v19.0/debug_token?input_token=${finalAccessToken}&access_token=${appId}|${appSecret}`
+      `https://graph.facebook.com/v19.0/debug_token?${debugParams.toString()}`
     );
     const debugData = await debugRes.json();
 
@@ -91,16 +96,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
-    // Extract WABA ID from granular_scopes
+    // Extract WABA ID from granular_scopes or target_ids
     const granularScopes = debugData.data?.granular_scopes || [];
     const whatsappScope = granularScopes.find(
       (s: { scope: string; target_ids?: string[] }) =>
-        s.scope === "whatsapp_business_management"
+        s.scope === "whatsapp_business_management" || s.scope === "whatsapp_business_messaging"
     );
 
-    const wabaIds = whatsappScope?.target_ids || [];
+    let wabaIds: string[] = whatsappScope?.target_ids || [];
+
+    if (wabaIds.length === 0 && Array.isArray(debugData.data?.target_ids)) {
+      wabaIds = debugData.data.target_ids;
+    }
+
     if (wabaIds.length === 0) {
-      logger.error("No WABA IDs found in granular_scopes", { granularScopes });
+      // Fallback: Query me/whatsapp_business_accounts
+      const wabaParams = new URLSearchParams({ access_token: finalAccessToken });
+      const wabaRes = await fetch(
+        `https://graph.facebook.com/v19.0/me/whatsapp_business_accounts?${wabaParams.toString()}`
+      );
+      const wabaData = await wabaRes.json();
+      if (wabaRes.ok && Array.isArray(wabaData.data) && wabaData.data.length > 0) {
+        wabaIds = wabaData.data.map((w: { id: string }) => w.id);
+      }
+    }
+
+    if (wabaIds.length === 0) {
+      logger.error("No WABA IDs found in granular_scopes or debug_token", { debugData });
       return NextResponse.json(
         { error: "No WhatsApp Business Accounts found. Please ensure you selected a WABA during the signup flow." },
         { status: 400 }
@@ -111,8 +133,9 @@ export async function POST(request: Request) {
     const firstWabaId = wabaIds[0];
 
     // 4. Fetch the phone numbers associated with this WABA
+    const phoneParams = new URLSearchParams({ access_token: finalAccessToken });
     const phoneRes = await fetch(
-      `https://graph.facebook.com/v19.0/${firstWabaId}/phone_numbers?access_token=${finalAccessToken}`
+      `https://graph.facebook.com/v19.0/${firstWabaId}/phone_numbers?${phoneParams.toString()}`
     );
     const phoneData = await phoneRes.json();
 
