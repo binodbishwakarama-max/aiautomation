@@ -9,6 +9,7 @@ const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
 export const metadata: Metadata = {
   title: "ReplySync | Automate WhatsApp",
   description: "WhatsApp automation and CRM dashboard",
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     title: 'ReplySync',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/icon', sizes: '192x192', type: 'image/png' },
       { url: '/icon', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
