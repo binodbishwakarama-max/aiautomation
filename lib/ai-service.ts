@@ -146,12 +146,13 @@ Respond in JSON format only:
       ...chatHistory,
     ]);
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
+    const rawContent = response.choices[0]?.message?.content;
+    if (!rawContent) {
       throw new Error('Empty response from Groq');
     }
 
-    const parsed = JSON.parse(content);
+    const cleanedContent = rawContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+    const parsed = JSON.parse(cleanedContent);
     const reply = typeof parsed.reply === 'string' ? parsed.reply.trim() : '';
     const escalate = Boolean(parsed.escalate);
     const captureLead = Boolean(parsed.capture_lead);

@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { ArrowRight, Lock, Mail, User, Building2, Eye, EyeOff } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [emailConfirmationSent, setEmailConfirmationSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -60,91 +63,126 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background text-textPrimary px-4 py-8">
+    <div className="min-h-screen bg-background text-textPrimary flex flex-col items-center justify-center p-6 relative overflow-hidden select-none">
+      
+      {/* Ambient background glow */}
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-accent/15 blur-[120px] pointer-events-none" />
+
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-surface p-8 rounded-card border border-border shadow-glow-primary/10"
+        className="w-full max-w-md glass-card-accent p-8 sm:p-10 rounded-3xl border border-white/10 shadow-2xl relative z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">ReplySync</h1>
-          <p className="text-textMuted text-sm">Create your multi-tenant workspace</p>
+        <div className="flex flex-col items-center text-center mb-8">
+          <Link href="/" className="mb-4">
+            <Logo size="lg" />
+          </Link>
+          <h1 className="text-xl font-extrabold text-gradient">Create your workspace</h1>
+          <p className="text-xs text-textMuted mt-1">Start automating Meta WhatsApp inquiries in under 2 minutes</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
+          <div className="mb-6 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono text-center">
             {error}
           </div>
         )}
 
         {emailConfirmationSent && (
-          <div className="mb-6 p-3 bg-primary/10 border border-primary/30 rounded-lg text-textPrimary text-sm text-center">
-            Account created. Check your inbox to verify your email before signing in.
+          <div className="mb-6 p-3.5 bg-accent/10 border border-accent/20 rounded-xl text-accent text-xs font-mono text-center">
+            Account created! Check your email inbox to confirm registration before signing in.
           </div>
         )}
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-textMuted mb-2">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-textPrimary focus:outline-none focus:border-primary focus:shadow-glow-primary transition-all"
-              placeholder="John Doe"
-              required
-            />
+            <label className="block text-[10px] font-mono uppercase font-bold tracking-wider text-textMuted mb-1.5">
+              Full Name
+            </label>
+            <div className="relative">
+              <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textMuted" />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent/40"
+                placeholder="John Doe"
+                required
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-textMuted mb-2">Email address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-textPrimary focus:outline-none focus:border-primary focus:shadow-glow-primary transition-all"
-              placeholder="you@company.com"
-              required
-            />
+            <label className="block text-[10px] font-mono uppercase font-bold tracking-wider text-textMuted mb-1.5">
+              Work Email Address
+            </label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textMuted" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent/40"
+                placeholder="you@company.com"
+                required
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-textMuted mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-textPrimary focus:outline-none focus:border-primary focus:shadow-glow-primary transition-all"
-              placeholder="••••••••"
-              required
-            />
+            <label className="block text-[10px] font-mono uppercase font-bold tracking-wider text-textMuted mb-1.5">
+              Organization / Business Name
+            </label>
+            <div className="relative">
+              <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textMuted" />
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent/40"
+                placeholder="Acme Business Corp"
+                required
+              />
+            </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-textMuted mb-2">Organization / Business Name</label>
-            <input
-              type="text"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-4 py-3 text-textPrimary focus:outline-none focus:border-primary focus:shadow-glow-primary transition-all"
-              placeholder="Acme Coaching Corp"
-              required
-            />
+            <label className="block text-[10px] font-mono uppercase font-bold tracking-wider text-textMuted mb-1.5">
+              Password
+            </label>
+            <div className="relative">
+              <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textMuted" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-background border border-border rounded-xl pl-10 pr-10 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent/40"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-textMuted hover:text-textPrimary"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 px-4 bg-primary text-background font-bold rounded-xl hover:bg-opacity-90 transition-all shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+            className="btn-primary w-full py-3.5 text-xs font-bold mt-2"
           >
-            {isLoading ? "Creating Account..." : "Create Account"}
+            <span>{isLoading ? "Deploying Workspace..." : "Create Free Workspace"}</span>
+            <ArrowRight size={14} />
           </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-textMuted">
+        <p className="mt-8 text-center text-xs text-textMuted">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Log in
+          <Link href="/login" className="text-accent font-semibold hover:underline">
+            Sign In
           </Link>
         </p>
       </motion.div>

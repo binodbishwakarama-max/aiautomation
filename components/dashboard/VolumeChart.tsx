@@ -19,7 +19,6 @@ interface ChartProps {
 
 export function VolumeChart({ conversations }: ChartProps) {
   const data = useMemo(() => {
-    // Generate an array of the last 7 days
     const last7Days = Array.from({ length: 7 }).map((_, i) => {
       const date = subDays(new Date(), 6 - i);
       return {
@@ -29,7 +28,6 @@ export function VolumeChart({ conversations }: ChartProps) {
       };
     });
 
-    // Populate counts
     conversations.forEach(c => {
       if (!c.last_message_at) return;
       const dateStr = format(new Date(c.last_message_at), 'yyyy-MM-dd');
@@ -43,46 +41,47 @@ export function VolumeChart({ conversations }: ChartProps) {
   }, [conversations]);
 
   return (
-    <div className="w-full h-[300px]">
+    <div className="w-full h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={data}
-          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
         >
           <defs>
             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#02c697" stopOpacity={0.35}/>
+              <stop offset="95%" stopColor="#02c697" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.05)" />
           <XAxis 
             dataKey="display" 
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 12, fill: 'hsl(var(--text-muted))' }}
-            dy={10}
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            dy={8}
           />
           <YAxis 
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 12, fill: 'hsl(var(--text-muted))' }}
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
           />
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: 'hsl(var(--surface))',
-              borderColor: 'hsl(var(--border))',
-              borderRadius: '0.5rem',
-              color: 'hsl(var(--text-primary))'
+              backgroundColor: '#11131c',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '0.75rem',
+              color: '#f8fafc',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)'
             }}
-            itemStyle={{ color: 'hsl(var(--primary))' }}
+            itemStyle={{ color: '#02c697', fontWeight: 600 }}
           />
           <Area 
             type="monotone" 
             dataKey="count" 
             name="Conversations"
-            stroke="hsl(var(--primary))" 
-            strokeWidth={3}
+            stroke="#02c697" 
+            strokeWidth={2.5}
             fillOpacity={1} 
             fill="url(#colorCount)" 
           />

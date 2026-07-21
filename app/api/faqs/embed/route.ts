@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
 export async function POST(request: Request) {
   try {
     const internalSecret = request.headers.get('x-internal-secret');
-    if (internalSecret !== process.env.INTERNAL_API_SECRET) {
+    if (!process.env.INTERNAL_API_SECRET || internalSecret !== process.env.INTERNAL_API_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

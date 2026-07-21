@@ -11,6 +11,7 @@ const config: Config = {
       colors: {
         background: "var(--color-background)",
         surface: "var(--color-surface)",
+        surfaceHover: "var(--color-surface-hover)",
         border: "var(--color-border)",
         accent: "var(--color-accent)",
         success: "var(--color-success)",
@@ -23,8 +24,8 @@ const config: Config = {
           foreground: "var(--color-background)"
         },
         secondary: {
-          DEFAULT: "#818CF8",
-          foreground: "#FFFFFF"
+          DEFAULT: "#00E599",
+          foreground: "#0B1215"
         },
       },
       fontSize: {
@@ -44,12 +45,12 @@ const config: Config = {
         "s-48": "48px",
       },
       borderRadius: {
-        DEFAULT: "12px",
+        DEFAULT: "8px",
         'card': "var(--radius-card)"
       },
       boxShadow: {
-        'glow-primary': "0 0 20px -5px rgba(2, 198, 151, 0.4)",
-        'glow-secondary': "0 0 20px -5px rgba(129, 140, 248, 0.4)",
+        'glow-primary': "0 0 15px -3px rgba(0, 229, 153, 0.3)",
+        'glow-secondary': "0 0 15px -3px rgba(255, 176, 32, 0.3)",
         'card-shadow': "var(--shadow-card)",
       }
     },

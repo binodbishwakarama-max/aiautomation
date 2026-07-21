@@ -22,31 +22,31 @@ export function StatusDonutChart({ conversations }: ChartProps) {
     conversations.forEach(c => {
       if (c.status === 'escalated') escalated++;
       else if (c.status === 'resolved') resolved++;
-      else active++; // defaults 'new' 'active' 'followed_up' to active
+      else active++;
     });
 
     return [
-      { name: 'Active', value: active, color: '#4ADE80' }, // green-400
-      { name: 'Resolved', value: resolved, color: '#9CA3AF' }, // gray-400
-      { name: 'Escalated', value: escalated, color: '#EF4444' } // red-500
+      { name: 'Active', value: active, color: '#02c697' },
+      { name: 'Resolved', value: resolved, color: '#64748b' },
+      { name: 'Escalated', value: escalated, color: '#ef4444' }
     ].filter(d => d.value > 0);
   }, [conversations]);
 
   if (data.length === 0) {
-    return <div className="w-full h-[300px] flex items-center justify-center text-textMuted text-sm">No data yet</div>;
+    return <div className="w-full h-[280px] flex items-center justify-center text-textMuted text-xs font-mono">No conversation status telemetry</div>;
   }
 
   return (
-    <div className="w-full h-[300px]">
+    <div className="w-full h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={90}
-            paddingAngle={5}
+            cy="45%"
+            innerRadius={55}
+            outerRadius={85}
+            paddingAngle={4}
             dataKey="value"
             stroke="none"
           >
@@ -56,16 +56,17 @@ export function StatusDonutChart({ conversations }: ChartProps) {
           </Pie>
           <Tooltip 
             contentStyle={{ 
-              backgroundColor: 'hsl(var(--surface))',
-              borderColor: 'hsl(var(--border))',
-              borderRadius: '0.5rem',
-              color: 'hsl(var(--text-primary))'
+              backgroundColor: '#11131c',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '0.75rem',
+              color: '#f8fafc',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)'
             }}
           />
           <Legend 
             verticalAlign="bottom" 
             height={36} 
-            wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+            wrapperStyle={{ paddingTop: '10px', fontSize: '11px', color: '#94a3b8' }}
           />
         </PieChart>
       </ResponsiveContainer>

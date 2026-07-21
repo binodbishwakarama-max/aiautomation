@@ -257,7 +257,7 @@ export function useSettingsForm() {
           .from("faqs")
           .delete()
           .eq("business_id", activeWorkspaceId)
-          .not("id", "in", `(${keepIds.join(",")})`);
+          .not("id", "in", `(${keepIds.map((id) => `"${id}"`).join(",")})`);
       } else {
         await supabase.from("faqs").delete().eq("business_id", activeWorkspaceId);
       }

@@ -5,11 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Conversation } from "@/lib/types";
 import { useWorkspace } from "@/components/providers/WorkspaceProvider";
-import { Search, MessageSquareOff } from "lucide-react";
+import { Search, MessageSquareOff, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/lib/utils";
 
 type FilterTab = "All" | "active" | "escalated" | "resolved";
@@ -89,60 +88,83 @@ export default function ConversationsLayout({ children }: { children: React.Reac
     return matchesFilter && matchesSearch;
   });
 
-  // Determine if we should show the list on mobile based on route
   const isRootRoute = pathname === "/conversations";
 
+  const StatusPill = ({ status }: { status: string }) => {
+    switch (status) {
+      case 'active':
+        return <span className="text-[9px] font-mono font-bold text-accent bg-accent/10 border border-accent/20 px-1.5 py-0.5 rounded">AI AUTO</span>;
+      case 'escalated':
+        return <span className="text-[9px] font-mono font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded animate-pulse">ESCALATED</span>;
+      case 'resolved':
+        return <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-500/10 border border-slate-500/20 px-1.5 py-0.5 rounded">RESOLVED</span>;
+      default:
+        return <span className="text-[9px] font-mono font-bold text-textMuted bg-surface border border-border px-1.5 py-0.5 rounded">{status}</span>;
+    }
+  };
+
   return (
-    <div className="flex h-[calc(100vh-[var(--topbar-height)])] -mx-4 -mt-4 lg:mx-0 lg:mt-0 p-4 lg:p-0 gap-6">
+    <div className="flex h-[calc(100vh-4rem)] p-4 lg:p-6 gap-6 max-w-7xl mx-auto w-full">
       
-      {/* Master List (Left Column - 25% on desktop, 100% on mobile when at root) */}
+      {/* Master List Column */}
       <div 
         className={cn(
-          "flex-col w-full xl:w-[320px] shrink-0 border-r border-border/50 xl:pr-4 h-full",
+          "flex-col w-full xl:w-[340px] shrink-0 border-r border-border/60 xl:pr-6 h-full select-none",
           isRootRoute ? "flex" : "hidden xl:flex"
         )}
       >
-        <div className="flex justify-between items-center mb-4 pt-2">
-          <h1 className="text-xs font-bold text-textPrimary uppercase tracking-wider">Inbox</h1>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={16} className="text-accent" />
+            <h1 className="text-xs font-bold text-textPrimary uppercase tracking-wider font-mono">
+              Live Inbox ({filteredData.length})
+            </h1>
+          </div>
+          <span className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">
+            ● Realtime Sync
+          </span>
         </div>
         
+        {/* Search */}
         <div className="relative w-full mb-3">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-textMuted" size={14} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" size={14} />
           <input 
             type="text" 
-            placeholder="Search messages..." 
+            placeholder="Search phone, name or content..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-background border border-border rounded-lg text-xs text-textPrimary focus:outline-none focus:border-border/80 transition-colors"
+            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
           />
         </div>
 
-        <div className="flex bg-[#0e0e14] border border-border rounded-lg p-0.5 mb-3">
+        {/* Filter Pills */}
+        <div className="flex bg-surface border border-border rounded-xl p-1 mb-4">
           {(["All", "active", "escalated", "resolved"] as FilterTab[]).map(tab => (
             <button 
               key={tab}
               onClick={() => setFilter(tab)}
               className={cn(
-                "flex-1 py-1 text-[10px] font-semibold rounded-md capitalize transition-colors",
+                "flex-1 py-1 text-[10px] font-semibold rounded-lg capitalize transition-all font-mono",
                 filter === tab 
-                  ? "bg-white/[0.04] text-textPrimary border border-border/60" 
+                  ? "bg-accent/15 text-accent border border-accent/30 font-bold" 
                   : "text-textMuted hover:text-textPrimary"
               )}
             >
-              {tab === "All" ? "All" : tab}
+              {tab}
             </button>
           ))}
         </div>
 
-        <div className="flex-grow overflow-y-auto space-y-1 pb-20 xl:pb-0 pr-1 custom-scrollbar">
+        {/* Conversations Scroll Feed */}
+        <div className="flex-grow overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           {loading || workspaceLoading ? (
-            <div className="flex flex-col gap-2 animate-pulse">
-              {[1,2,3,4,5].map(i => <div key={i} className="h-14 bg-white/[0.02] rounded-lg"></div>)}
+            <div className="flex flex-col gap-3 animate-pulse">
+              {[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-surface/50 rounded-xl border border-border"></div>)}
             </div>
           ) : filteredData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <MessageSquareOff size={24} className="mb-2 text-textMuted" />
-              <p className="text-xs text-textMuted">No conversations found</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center glass-card rounded-2xl border border-border">
+              <MessageSquareOff size={28} className="mb-2 text-textMuted opacity-50" />
+              <p className="text-xs text-textMuted font-mono">No matching conversations</p>
             </div>
           ) : (
             <AnimatePresence>
@@ -155,35 +177,35 @@ export default function ConversationsLayout({ children }: { children: React.Reac
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
                   >
                     <Link 
                       href={`/conversations/${conv.id}`}
                       className={cn(
-                        "flex flex-col p-2.5 rounded-lg border transition-colors cursor-pointer block",
+                        "flex flex-col p-3.5 rounded-xl border transition-all cursor-pointer block",
                         isActive 
-                          ? "bg-white/[0.04] border-border text-textPrimary" 
-                          : "bg-transparent border-transparent hover:bg-white/[0.01]"
+                          ? "bg-accent/10 border-accent/40 text-textPrimary shadow-glow-primary/20" 
+                          : "bg-surface/40 border-border hover:bg-surfaceHover hover:border-white/15"
                       )}
                     >
-                      <div className="flex justify-between items-start mb-0.5">
+                      <div className="flex justify-between items-start mb-1">
                         <span className={cn(
-                          "font-semibold text-xs truncate pr-2",
-                          isActive ? "text-textPrimary" : "text-textMuted group-hover:text-textPrimary"
+                          "font-bold text-xs truncate pr-2",
+                          isActive ? "text-accent" : "text-textPrimary"
                         )}>
                           {conv.customer_name || maskPhone(conv.customer_phone)}
                         </span>
-                        <div className="flex items-center text-[9px] text-textMuted whitespace-nowrap shrink-0 pt-0.5 font-mono">
-                          {conv.last_message_at ? formatDistanceToNow(new Date(conv.last_message_at)) : 'Now'}
-                        </div>
+                        <span className="text-[9px] text-textMuted font-mono shrink-0">
+                          {conv.last_message_at ? formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: false }) : 'Now'}
+                        </span>
                       </div>
                       
-                      <p className="text-[11px] text-textMuted truncate mb-1.5">
-                        {conv.last_message || "New conversation started"}
+                      <p className="text-[11px] text-textMuted truncate mb-2 leading-relaxed">
+                        {conv.last_message || "New WhatsApp message..."}
                       </p>
 
                       <div className="flex justify-between items-center">
-                         <StatusBadge status={conv.status} />
+                        <StatusPill status={conv.status} />
+                        <span className="text-[9px] text-textMuted font-mono">{conv.customer_phone.substring(0, 6)}...</span>
                       </div>
                     </Link>
                   </motion.div>
@@ -194,9 +216,9 @@ export default function ConversationsLayout({ children }: { children: React.Reac
         </div>
       </div>
 
-      {/* Detail View Container (Right Area) - Hides on mobile if on root routing */}
+      {/* Detail View Pane */}
       <div className={cn(
-        "flex-1 h-full min-w-0 xl:flex", 
+        "flex-1 h-full min-w-0 xl:flex rounded-2xl glass-card overflow-hidden border border-border", 
         isRootRoute ? "hidden xl:flex" : "flex"
       )}>
         {children}
