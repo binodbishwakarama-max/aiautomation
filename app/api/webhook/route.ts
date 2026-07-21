@@ -79,11 +79,15 @@ export async function POST(request: Request) {
     }
 
     const secrets = await getWorkspaceSecretsOrThrow(business.id);
+
+    // Tech Provider model: Meta signs all webhooks using OUR central app secret.
+    // Fall back to per-workspace secret for manually configured tenants.
+    const signingSecret = process.env.META_APP_SECRET || secrets.appSecret;
     if (
       !verifyMetaWebhookSignature({
         rawBody,
         signatureHeader,
-        appSecret: secrets.appSecret,
+        appSecret: signingSecret,
       })
     ) {
       logger.warn('Webhook signature verification failed', { businessId: business.id });
