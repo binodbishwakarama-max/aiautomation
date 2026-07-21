@@ -75,28 +75,36 @@ export async function POST(request: Request) {
 
     const finalAccessToken = longLivedData.access_token;
 
-    // 3. Fetch the linked WhatsApp Business Accounts (WABA)
-    const wabaRes = await fetch(
-      `https://graph.facebook.com/v19.0/me/whatsapp_business_accounts?access_token=${finalAccessToken}`
+    // 3. Use debug_token to extract the WABA ID from granular_scopes
+    const debugRes = await fetch(
+      `https://graph.facebook.com/v19.0/debug_token?input_token=${finalAccessToken}&access_token=${appId}|${appSecret}`
     );
-    const wabaData = await wabaRes.json();
+    const debugData = await debugRes.json();
 
-    if (!wabaRes.ok || wabaData.error) {
-      const errMsg = wabaData.error?.message || "Failed to query WhatsApp Business Accounts.";
-      logger.error("Meta WABA lookup error", { error: wabaData.error });
+    if (!debugRes.ok || debugData.error) {
+      const errMsg = debugData.error?.message || "Failed to inspect access token.";
+      logger.error("Meta debug_token error", { error: debugData.error });
       return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
-    const wabaAccounts = wabaData.data || [];
-    if (wabaAccounts.length === 0) {
+    // Extract WABA ID from granular_scopes
+    const granularScopes = debugData.data?.granular_scopes || [];
+    const whatsappScope = granularScopes.find(
+      (s: { scope: string; target_ids?: string[] }) =>
+        s.scope === "whatsapp_business_management"
+    );
+
+    const wabaIds = whatsappScope?.target_ids || [];
+    if (wabaIds.length === 0) {
+      logger.error("No WABA IDs found in granular_scopes", { granularScopes });
       return NextResponse.json(
-        { error: "No WhatsApp Business Accounts found linked to your Facebook profile." },
+        { error: "No WhatsApp Business Accounts found. Please ensure you selected a WABA during the signup flow." },
         { status: 400 }
       );
     }
 
-    // Select the first active WABA
-    const firstWabaId = wabaAccounts[0].id;
+    // Select the first (most recently onboarded) WABA
+    const firstWabaId = wabaIds[0];
 
     // 4. Fetch the phone numbers associated with this WABA
     const phoneRes = await fetch(
