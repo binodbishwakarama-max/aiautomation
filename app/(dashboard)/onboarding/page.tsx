@@ -175,10 +175,10 @@ export default function OnboardingPage() {
     setTesting(false);
   };
 
-  if (loading || workspaceLoading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
+  if (loading || workspaceLoading) return <div className="min-h-[100dvh] flex items-center justify-center text-textMuted text-xs">Loading...</div>;
 
   if (!canManageWorkspace) {
-    return <div className="h-screen flex items-center justify-center text-textMuted">Only workspace admins can complete onboarding.</div>;
+    return <div className="min-h-[100dvh] flex items-center justify-center text-textMuted text-xs p-4 text-center">Only workspace admins can complete onboarding.</div>;
   }
 
   const pageVariants = {
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] px-4 pb-12">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)] w-full max-w-full px-4 pb-12">
       {showConfetti && <Confetti width={windowDimensions.width} height={windowDimensions.height} recycle={false} numberOfPieces={500} gravity={0.15}/>}
       
       <div className="w-full max-w-xl">

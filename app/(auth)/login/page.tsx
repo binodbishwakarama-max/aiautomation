@@ -176,10 +176,10 @@ function AuthContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden select-none">
+    <div className="min-h-[100dvh] w-full max-w-full bg-background text-textPrimary flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden select-none">
       
       {/* Background ambient glow */}
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-accent/15 blur-[120px] pointer-events-none" />
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-full max-w-[700px] h-[350px] bg-accent/15 blur-[120px] pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
@@ -346,7 +346,7 @@ function AuthContent() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-background border border-border rounded-xl pl-9 pr-4 py-2.5 text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
+                      className="w-full bg-background border border-border rounded-xl pl-9 pr-4 py-2.5 text-base sm:text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
                       placeholder="name@company.com"
                       required
                     />

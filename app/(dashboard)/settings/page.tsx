@@ -43,7 +43,7 @@ export default function SettingsPage() {
         <button
           onClick={form.saveSettings}
           disabled={form.savingSettings || !form.canManageWorkspace}
-          className="btn-primary text-xs font-bold shrink-0 shadow-glow-primary w-full sm:w-auto justify-center"
+          className="btn-primary text-xs font-bold shrink-0 shadow-glow-primary w-full sm:w-auto justify-center min-h-[44px] flex items-center gap-2"
         >
           <Save size={14} />
           <span>{form.savingSettings ? "Saving Settings..." : "Save Configuration"}</span>

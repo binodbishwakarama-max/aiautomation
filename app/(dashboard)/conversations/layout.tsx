@@ -104,36 +104,36 @@ export default function ConversationsLayout({ children }: { children: React.Reac
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem-60px)] md:h-[calc(100vh-4rem)] p-3 sm:p-4 lg:p-6 gap-4 sm:gap-6 max-w-7xl mx-auto w-full">
+    <div className="flex h-[calc(100dvh-4rem-60px)] md:h-[calc(100dvh-4rem)] p-3 sm:p-4 lg:p-6 gap-4 sm:gap-6 max-w-7xl mx-auto w-full">
       
       {/* Master List Column */}
       <div 
         className={cn(
-          "flex-col w-full xl:w-[340px] shrink-0 border-r border-border/60 xl:pr-6 h-full select-none",
+          "flex-col w-full xl:w-[340px] shrink-0 border-r border-border/60 xl:pr-6 h-full select-none min-w-0",
           isRootRoute ? "flex" : "hidden xl:flex"
         )}
       >
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            <MessageSquare size={16} className="text-accent" />
-            <h1 className="text-xs font-bold text-textPrimary uppercase tracking-wider font-mono">
+          <div className="flex items-center gap-2 min-w-0">
+            <MessageSquare size={16} className="text-accent shrink-0" />
+            <h1 className="text-xs font-bold text-textPrimary uppercase tracking-wider font-mono truncate">
               Live Inbox ({filteredData.length})
             </h1>
           </div>
-          <span className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">
+          <span className="text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20 shrink-0">
             ● Realtime Sync
           </span>
         </div>
         
         {/* Search */}
         <div className="relative w-full mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted" size={14} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-textMuted pointer-events-none" size={14} />
           <input 
             type="text" 
             placeholder="Search phone, name or content..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
+            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-base sm:text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
           />
         </div>
 

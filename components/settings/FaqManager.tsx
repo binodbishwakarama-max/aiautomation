@@ -48,36 +48,52 @@ function SortableFaqItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex gap-3 bg-white/[0.02] border border-white/5 p-5 rounded-xl items-start hover:border-white/10 transition-colors"
+      className="flex flex-col sm:flex-row gap-3 bg-white/[0.02] border border-white/5 p-3.5 sm:p-5 rounded-xl items-stretch sm:items-start hover:border-white/10 transition-colors relative"
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className={`mt-2 ${disabled ? "text-white/10 cursor-not-allowed" : "text-textMuted hover:text-textPrimary cursor-grab active:cursor-grabbing"}`}
-      >
-        <GripVertical size={20} />
+      <div className="flex items-center justify-between sm:justify-start">
+        <div
+          {...attributes}
+          {...listeners}
+          className={`py-1 sm:mt-2 ${disabled ? "text-white/10 cursor-not-allowed" : "text-textMuted hover:text-textPrimary cursor-grab active:cursor-grabbing"}`}
+        >
+          <GripVertical size={20} />
+        </div>
+        
+        {/* Mobile Trash Button */}
+        <button
+          onClick={() => removeFaq(faq.id)}
+          disabled={disabled}
+          className="sm:hidden text-textMuted hover:text-red-400 transition-colors disabled:opacity-40 active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label="Remove FAQ"
+        >
+          <Trash2 size={18} />
+        </button>
       </div>
-      <div className="flex-1 space-y-3">
+
+      <div className="flex-1 space-y-3 min-w-0">
         <input
           type="text"
           placeholder="Question"
           value={faq.question}
           disabled={disabled}
           onChange={(e) => updateFaq(faq.id, "question", e.target.value)}
-          className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
+          className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-2.5 text-base sm:text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
         />
         <textarea
           placeholder="Answer"
           value={faq.answer}
           disabled={disabled}
           onChange={(e) => updateFaq(faq.id, "answer", e.target.value)}
-          className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none min-h-[72px] disabled:opacity-60 transition-all"
+          className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-2.5 text-base sm:text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none min-h-[72px] disabled:opacity-60 transition-all"
         />
       </div>
+
+      {/* Desktop Trash Button */}
       <button
         onClick={() => removeFaq(faq.id)}
         disabled={disabled}
-        className="mt-2 text-textMuted hover:text-red-400 transition-colors disabled:opacity-40 active:scale-90"
+        className="hidden sm:flex mt-2 text-textMuted hover:text-red-400 transition-colors disabled:opacity-40 active:scale-90 min-w-[44px] min-h-[44px] items-center justify-center shrink-0"
+        aria-label="Remove FAQ"
       >
         <Trash2 size={18} />
       </button>
@@ -121,15 +137,15 @@ export default function FaqManager({
   };
 
   return (
-    <section className="glass-card p-8 rounded-card shadow-lg">
+    <section className="glass-card p-4 sm:p-8 rounded-card shadow-lg">
       <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-        <h2 className="text-lg font-bold text-textPrimary flex items-center gap-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
-          <HelpCircle size={18} className="text-primary" /> FAQ Knowledge Base
+        <h2 className="text-base sm:text-lg font-bold text-textPrimary flex items-center gap-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
+          <HelpCircle size={18} className="text-primary shrink-0" /> FAQ Knowledge Base
         </h2>
         <button
           onClick={addFaq}
           disabled={disabled}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-50 select-none cursor-pointer"
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/15 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-50 select-none cursor-pointer min-h-[44px]"
         >
           <Plus size={14} /> Add FAQ
         </button>

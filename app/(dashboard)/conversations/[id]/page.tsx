@@ -294,15 +294,16 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
                   }
                 }}
                 placeholder="Type a manual reply... (Enter to send)"
-                className="flex-grow bg-transparent resize-none outline-none text-xs text-textPrimary px-3 py-2 min-h-[38px] max-h-[120px] custom-scrollbar leading-normal"
+                className="flex-grow bg-transparent resize-none outline-none text-base sm:text-xs text-textPrimary px-3 py-2 min-h-[38px] max-h-[120px] custom-scrollbar leading-normal"
                 rows={1}
               />
               <button
                 onClick={sendManualReply}
+                aria-label="Send reply"
                 disabled={sendingReply || !replyInput.trim()}
-                className="shrink-0 w-8 h-8 m-0.5 rounded-md bg-primary text-background flex items-center justify-center hover:bg-primary/95 disabled:opacity-50 disabled:bg-transparent disabled:text-textMuted transition-colors"
+                className="shrink-0 min-w-[40px] min-h-[40px] sm:w-8 sm:h-8 m-0.5 rounded-md bg-accent text-[#0B1215] flex items-center justify-center hover:bg-[#00ffaa] disabled:opacity-50 disabled:bg-transparent disabled:text-textMuted transition-colors"
               >
-                {sendingReply ? <Spinner size="sm" /> : <Send size={12} />}
+                {sendingReply ? <Spinner size="sm" /> : <Send size={14} />}
               </button>
           </div>
         </div>
@@ -322,7 +323,13 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
       )}>
         <div className="p-4 border-b border-border bg-[#0c0c12] lg:hidden flex items-center justify-between">
           <h3 className="text-xs font-bold text-textPrimary uppercase tracking-wider">Lead Information</h3>
-          <button onClick={() => setShowInfoPanel(false)} className="text-textMuted p-1 text-xs">✕</button>
+          <button 
+            onClick={() => setShowInfoPanel(false)} 
+            aria-label="Close panel"
+            className="text-textMuted hover:text-textPrimary min-w-[44px] min-h-[44px] flex items-center justify-center text-sm font-bold"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="flex-grow overflow-y-auto p-5 space-y-6 custom-scrollbar">

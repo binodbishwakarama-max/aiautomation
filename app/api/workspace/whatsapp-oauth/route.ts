@@ -10,7 +10,7 @@ import {
 
 export async function POST(request: Request) {
   try {
-    const { code, workspaceId } = await request.json();
+    const { code, workspaceId, redirectUri: clientRedirectUri } = await request.json();
 
     if (!code || !workspaceId) {
       return NextResponse.json(
@@ -27,18 +27,22 @@ export async function POST(request: Request) {
 
     if (!appId || !appSecret) {
       return NextResponse.json(
-        { error: "Meta App ID or App Secret is not configured on the server." },
+        { error: "Meta App ID (NEXT_PUBLIC_META_APP_ID) or App Secret (META_APP_SECRET) is not configured in environment variables." },
         { status: 500 }
       );
     }
 
     // 1. Exchange the auth code for a short-lived user access token
-    const origin = request.headers.get("origin") || "http://localhost:3000";
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const fallbackOrigin = host ? `${proto}://${host}` : (request.headers.get("origin") || "http://localhost:3000");
+    const redirect_uri = clientRedirectUri || `${fallbackOrigin}/settings`;
+
     const tokenParams = new URLSearchParams({
       client_id: appId,
       client_secret: appSecret,
       code,
-      redirect_uri: `${origin}/settings`,
+      redirect_uri,
     });
 
     const tokenRes = await fetch(
@@ -177,9 +181,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
+    const errorMsg = error instanceof Error ? error.message : String(error);
     logger.error("Unexpected error in WhatsApp OAuth endpoint", {
-      error: error instanceof Error ? error.message : String(error),
+      error: errorMsg,
     });
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: errorMsg || "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

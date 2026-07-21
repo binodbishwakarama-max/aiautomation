@@ -92,17 +92,21 @@ export default function TopBar() {
         </div>
 
         {/* Notifications Icon */}
-        <button className="w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-textMuted hover:text-textPrimary hover:bg-surfaceHover transition-colors relative">
+        <button 
+          aria-label="Notifications"
+          className="min-w-[44px] min-h-[44px] sm:w-8 sm:h-8 rounded-xl bg-surface border border-border flex items-center justify-center text-textMuted hover:text-textPrimary hover:bg-surfaceHover transition-colors relative"
+        >
           <Bell size={14} />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-accent" />
+          <span className="absolute top-2.5 right-2.5 sm:top-2 sm:right-2 w-1.5 h-1.5 rounded-full bg-accent" />
         </button>
 
         {/* Sign Out Button */}
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-border text-xs text-textMuted hover:text-red-400 hover:border-red-400/30 hover:bg-red-500/10 transition-all font-medium min-w-[36px] min-h-[36px] justify-center"
+          aria-label="Sign out"
+          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-border text-xs text-textMuted hover:text-red-400 hover:border-red-400/30 hover:bg-red-500/10 transition-all font-medium min-w-[44px] min-h-[44px] justify-center"
         >
-          <LogOut size={13} />
+          <LogOut size={14} />
           <span className="hidden md:inline">Sign out</span>
         </button>
       </div>

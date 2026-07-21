@@ -87,7 +87,7 @@ export function PwaInstallBanner() {
     <>
       {/* FLOATING PWA INSTALL POPUP BANNER */}
       {showBanner && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:w-[390px] z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-[390px] z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className="bg-[#131F24] border border-accent/40 rounded-xl p-4 shadow-2xl backdrop-blur-xl flex flex-col gap-3">
             
             {/* Header */}
@@ -108,7 +108,7 @@ export function PwaInstallBanner() {
               {/* Close Button */}
               <button 
                 onClick={handleDismiss}
-                className="p-1.5 rounded-lg text-textMuted hover:text-textPrimary bg-background/50 border border-border min-h-[36px] min-w-[36px] flex items-center justify-center shrink-0"
+                className="p-1.5 rounded-lg text-textMuted hover:text-textPrimary bg-background/50 border border-border min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
                 aria-label="Close install banner"
               >
                 <X size={16} />
@@ -119,13 +119,13 @@ export function PwaInstallBanner() {
             <div className="flex items-center gap-2 pt-1 border-t border-border/60">
               <button
                 onClick={handleDismiss}
-                className="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-textMuted hover:text-textPrimary bg-background/40 border border-border min-h-[40px]"
+                className="flex-1 py-2 px-3 rounded-lg text-xs font-semibold text-textMuted hover:text-textPrimary bg-background/40 border border-border min-h-[44px]"
               >
                 Not Now
               </button>
               <button
                 onClick={handleInstallClick}
-                className="flex-1 py-2 px-3 rounded-lg text-xs font-bold text-[#0B1215] bg-accent hover:bg-[#00ffaa] transition-colors min-h-[40px] flex items-center justify-center gap-1.5 shadow-glow-primary"
+                className="flex-1 py-2 px-3 rounded-lg text-xs font-bold text-[#0B1215] bg-accent hover:bg-[#00ffaa] transition-colors min-h-[44px] flex items-center justify-center gap-1.5 shadow-glow-primary"
               >
                 <Download size={14} strokeWidth={2.5} />
                 <span>Install App</span>

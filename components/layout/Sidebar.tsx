@@ -156,7 +156,7 @@ export default function Sidebar() {
               <Link 
                 key={link.name} 
                 href={link.href}
-                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 rounded-xl transition-all min-w-[56px] min-h-[44px] ${
+                className={`flex flex-col items-center justify-center gap-0.5 py-1 px-1.5 rounded-xl transition-all flex-1 max-w-[80px] min-h-[44px] ${
                   isActive 
                     ? "text-accent font-bold bg-accent/10" 
                     : "text-textMuted active:text-textPrimary"

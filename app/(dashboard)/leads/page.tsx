@@ -195,14 +195,14 @@ export default function LeadsPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button 
             onClick={exportCSV}
-            className="btn-secondary text-xs font-medium justify-center"
+            className="btn-secondary text-xs font-medium justify-center min-h-[44px] flex items-center"
           >
             <Download size={14} />
             <span>Export CSV</span>
           </button>
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary text-xs justify-center"
+            className="btn-primary text-xs justify-center min-h-[44px] flex items-center"
           >
             <Plus size={14} />
             <span>Add Manual Lead</span>
@@ -239,7 +239,7 @@ export default function LeadsPage() {
             placeholder="Search lead name or phone..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
+            className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-base sm:text-xs text-textPrimary focus:outline-none focus:border-accent/40 transition-colors"
           />
         </div>
         

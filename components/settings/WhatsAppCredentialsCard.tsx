@@ -89,10 +89,12 @@ export default function WhatsAppCredentialsCard({
         setConnectingOauth(true);
         setOauthError(null);
         try {
+          const origin = typeof window !== "undefined" ? window.location.origin : "";
+          const redirectUri = `${origin}/settings`;
           const res = await fetch("/api/workspace/whatsapp-oauth", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, workspaceId }),
+            body: JSON.stringify({ code, workspaceId, redirectUri }),
           });
           const data = await res.json();
           if (res.ok && data.success) {
@@ -152,7 +154,7 @@ export default function WhatsAppCredentialsCard({
   ];
 
   return (
-    <section className="glass-card p-8 md:p-10 rounded-card shimmer-container">
+    <section className="glass-card p-4 sm:p-8 md:p-10 rounded-card shimmer-container">
       {/* Title Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-white/5 pb-8">
         <div>
@@ -218,7 +220,7 @@ export default function WhatsAppCredentialsCard({
       </div>
 
       {/* Step Panel Contents */}
-      <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-8 min-h-[300px] flex flex-col justify-between backdrop-blur-md transition-all duration-300">
+      <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 sm:p-8 min-h-[300px] flex flex-col justify-between backdrop-blur-md transition-all duration-300">
         
         {/* STEP 1: Meta Webhook Setup */}
         {activeStep === 1 && (
@@ -248,7 +250,7 @@ export default function WhatsAppCredentialsCard({
                   <button
                     type="button"
                     onClick={handleCopyUrl}
-                    className="p-1.5 hover:text-primary transition-colors text-textMuted active:scale-90"
+                    className="p-1.5 hover:text-primary transition-colors text-textMuted active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Copy URL"
                   >
                     {copiedUrl ? <Check size={16} className="text-primary" /> : <Copy size={16} />}
@@ -263,7 +265,7 @@ export default function WhatsAppCredentialsCard({
                   <button
                     type="button"
                     onClick={handleCopyToken}
-                    className="p-1.5 hover:text-primary transition-colors text-textMuted active:scale-90"
+                    className="p-1.5 hover:text-primary transition-colors text-textMuted active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Copy Token"
                   >
                     {copiedToken ? <Check size={16} className="text-primary" /> : <Copy size={16} />}
@@ -286,7 +288,7 @@ export default function WhatsAppCredentialsCard({
             </div>
 
             {/* Google-like Connect Button */}
-            <div className="flex flex-col items-center justify-center p-8 border border-white/5 bg-white/[0.01] rounded-2xl text-center space-y-5 max-w-xl mx-auto w-full shadow-inner">
+            <div className="flex flex-col items-center justify-center p-4 sm:p-8 border border-white/5 bg-white/[0.01] rounded-2xl text-center space-y-5 max-w-xl mx-auto w-full shadow-inner">
               <div className="w-12 h-12 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 font-bold text-xl">
                 f
               </div>
@@ -301,7 +303,7 @@ export default function WhatsAppCredentialsCard({
                 type="button"
                 onClick={handleFacebookConnect}
                 disabled={connectingOauth || disabled}
-                className="flex items-center justify-center gap-2.5 px-6 py-3 bg-[#1877f2] hover:bg-[#156bec] disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all text-xs w-full max-w-xs cursor-pointer active:scale-95"
+                className="flex items-center justify-center gap-2.5 px-6 py-3 bg-[#1877f2] hover:bg-[#156bec] disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all text-xs w-full max-w-xs cursor-pointer active:scale-95 min-h-[44px]"
               >
                 {connectingOauth ? "Connecting..." : "Connect with Facebook"}
               </button>
@@ -321,7 +323,7 @@ export default function WhatsAppCredentialsCard({
               <button
                 type="button"
                 onClick={() => setShowManual((prev) => !prev)}
-                className="text-xs font-semibold text-primary hover:underline"
+                className="text-xs font-semibold text-primary hover:underline min-h-[44px] inline-flex items-center"
               >
                 {showManual ? "Hide Manual Form" : "Configure Manually (Advanced Devs)"}
               </button>
@@ -337,13 +339,13 @@ export default function WhatsAppCredentialsCard({
                     disabled={disabled}
                     onChange={(e) => setWhatsappNumberId(e.target.value)}
                     placeholder="e.g. 1029384756"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-base sm:text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-textMuted mb-2">Stored Access Token Status</label>
-                  <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-textPrimary flex items-center justify-between">
+                  <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-base sm:text-sm text-textPrimary flex items-center justify-between">
                     <span>{storedAccessTokenLast4 ? `••••••••${storedAccessTokenLast4}` : "Not configured"}</span>
                     <Lock size={14} className="text-textMuted" />
                   </div>
@@ -357,7 +359,7 @@ export default function WhatsAppCredentialsCard({
                     disabled={disabled}
                     onChange={(e) => setWhatsappAccessTokenInput(e.target.value)}
                     placeholder="Paste fresh system user or temporary token"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-base sm:text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
                   />
                   <label className="mt-2 inline-flex items-center gap-2 text-xs text-textMuted select-none cursor-pointer">
                     <input
@@ -372,7 +374,7 @@ export default function WhatsAppCredentialsCard({
 
                 <div>
                   <label className="block text-xs font-semibold text-textMuted mb-2">Stored App Secret Status</label>
-                  <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-textPrimary flex items-center justify-between">
+                  <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-base sm:text-sm text-textPrimary flex items-center justify-between">
                     <span>{storedAppSecretLast4 ? `••••••••${storedAppSecretLast4}` : "Not configured"}</span>
                     <Lock size={14} className="text-textMuted" />
                   </div>
@@ -386,7 +388,7 @@ export default function WhatsAppCredentialsCard({
                     disabled={disabled}
                     onChange={(e) => setWhatsappAppSecretInput(e.target.value)}
                     placeholder="App Secret (found under Settings > Basic in your App Dashboard)"
-                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 font-mono text-base sm:text-sm text-textPrimary focus:border-primary/40 focus:ring-1 focus:ring-primary/40 focus:outline-none disabled:opacity-60 transition-all"
                   />
                   <label className="mt-2 inline-flex items-center gap-2 text-xs text-textMuted select-none cursor-pointer">
                     <input
@@ -420,7 +422,7 @@ export default function WhatsAppCredentialsCard({
               </p>
             </div>
 
-            <div className="flex flex-col items-center justify-center p-8 border border-white/5 border-dashed rounded-xl gap-4 bg-white/[0.01]">
+            <div className="flex flex-col items-center justify-center p-4 sm:p-8 border border-white/5 border-dashed rounded-xl gap-4 bg-white/[0.01]">
               {connectionStatus === "success" ? (
                 <div className="text-center space-y-2">
                   <CheckCircle2 size={48} className="text-emerald-500 mx-auto" />
@@ -445,7 +447,7 @@ export default function WhatsAppCredentialsCard({
                 type="button"
                 onClick={onTestConnection}
                 disabled={testingConnection || disabled}
-                className="flex items-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl shadow-glow-primary hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all text-sm"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-background font-bold rounded-xl shadow-glow-primary hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all text-sm min-h-[44px]"
               >
                 <LinkIcon size={14} />
                 {testingConnection ? "Testing Connection..." : "Test Connection"}
@@ -460,7 +462,7 @@ export default function WhatsAppCredentialsCard({
             type="button"
             disabled={activeStep === 1}
             onClick={() => setActiveStep((prev) => (prev - 1) as 1 | 2 | 3)}
-            className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-textMuted hover:text-textPrimary disabled:opacity-30 disabled:pointer-events-none transition-colors active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-textMuted hover:text-textPrimary disabled:opacity-30 disabled:pointer-events-none transition-colors active:scale-95 min-h-[44px]"
           >
             <ChevronLeft size={16} /> Back
           </button>
@@ -469,7 +471,7 @@ export default function WhatsAppCredentialsCard({
             <button
               type="button"
               onClick={() => setActiveStep((prev) => (prev + 1) as 1 | 2 | 3)}
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-white/5 border border-white/5 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all rounded-xl text-xs font-bold text-textPrimary active:scale-95"
+              className="flex items-center justify-center gap-1.5 px-5 py-2.5 bg-white/5 border border-white/5 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all rounded-xl text-xs font-bold text-textPrimary active:scale-95 min-h-[44px]"
             >
               Continue <ChevronRight size={16} />
             </button>
