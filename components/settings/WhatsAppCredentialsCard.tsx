@@ -139,8 +139,8 @@ export default function WhatsAppCredentialsCard({
     const appId = process.env.NEXT_PUBLIC_META_APP_ID;
     const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
 
-    if (!appId || !configId) {
-      setOauthError("Meta App ID or Configuration ID is missing. Please configure them in your settings.");
+    if (!appId) {
+      setOauthError("Meta App ID (NEXT_PUBLIC_META_APP_ID) is missing. Please configure it in your Vercel Environment Variables.");
       return;
     }
 
@@ -149,9 +149,63 @@ export default function WhatsAppCredentialsCard({
 
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const redirectUri = `${origin}/settings`;
-    const oauthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&config_id=${configId}&response_type=code&override_default_response_type=true&state=${workspaceId}`;
+
+    // 1. Try JS SDK Popup if loaded
+    if (typeof window !== "undefined" && (window as unknown as { FB?: unknown }).FB) {
+      try {
+        const fb = (window as unknown as { FB: { login: (cb: (res: { authResponse?: { code?: string } }) => void, opts: Record<string, unknown>) => void } }).FB;
+        const opts: Record<string, unknown> = {
+          response_type: "code",
+          override_default_response_type: true,
+        };
+
+        if (configId) {
+          opts.config_id = configId;
+        } else {
+          opts.scope = "whatsapp_business_management,whatsapp_business_messaging";
+        }
+
+        fb.login((response) => {
+          if (response?.authResponse?.code) {
+            const code = response.authResponse.code;
+            void (async () => {
+              try {
+                const res = await fetch("/api/workspace/whatsapp-oauth", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ code, workspaceId, redirectUri }),
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                  window.location.reload();
+                } else {
+                  setOauthError(data.error || "Failed to exchange authorization code.");
+                }
+              } catch (err) {
+                console.error("Facebook SDK OAuth exchange error:", err);
+                setOauthError(err instanceof Error ? err.message : "OAuth token exchange failed.");
+              } finally {
+                setConnectingOauth(false);
+              }
+            })();
+          } else {
+            setConnectingOauth(false);
+          }
+        }, opts);
+        return;
+      } catch (fbErr) {
+        console.warn("FB SDK popup launch error, falling back to OAuth redirect:", fbErr);
+      }
+    }
+
+    // 2. Standard OAuth Dialog Redirect Fallback
+    const oauthUrl = configId
+      ? `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&config_id=${configId}&response_type=code&override_default_response_type=true&state=${workspaceId}`
+      : `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&scope=whatsapp_business_management,whatsapp_business_messaging&response_type=code&state=${workspaceId}`;
 
     window.location.href = oauthUrl;
   };
