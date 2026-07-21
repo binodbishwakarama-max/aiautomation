@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate-key": "node scripts/generate-key.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

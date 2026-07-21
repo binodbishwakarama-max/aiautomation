@@ -181,7 +181,7 @@ describe("processAiReply", () => {
     expect(result.escalated).toBe(true);
   });
 
-  it("throws when Groq returns empty content", async () => {
+  it("escalates to human agent when primary AI provider returns empty content", async () => {
     setupMocks();
 
     vi.mocked(groq.chat.completions.create).mockResolvedValue({
@@ -189,6 +189,8 @@ describe("processAiReply", () => {
     } as unknown as Awaited<ReturnType<typeof groq.chat.completions.create>>);
 
     const { processAiReply } = await import("../lib/ai-service");
-    await expect(processAiReply("conv-1")).rejects.toThrow("Empty response from Groq");
+    const result = await processAiReply("conv-1");
+    expect(result.success).toBe(true);
+    expect(result.escalated).toBe(true);
   });
 });
