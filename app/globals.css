@@ -85,6 +85,41 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.22);
   }
+
+  /* Prevent double-tap zoom delay on interactive elements */
+  button, a, select, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Range slider thumb for mobile touch targets */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    border: 2px solid var(--color-background);
+    box-shadow: 0 0 8px rgba(0, 229, 153, 0.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    border: 2px solid var(--color-background);
+    box-shadow: 0 0 8px rgba(0, 229, 153, 0.4);
+  }
+
+  /* PWA standalone mode adjustments */
+  @media (display-mode: standalone) {
+    body {
+      /* Extra safety for notch/dynamic island */
+      padding-top: env(safe-area-inset-top);
+    }
+  }
 }
 
 @layer components {

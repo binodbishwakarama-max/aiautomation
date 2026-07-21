@@ -18,14 +18,16 @@ export default function Sidebar() {
   const activeWorkspace = workspaces.find((w) => w.businessId === activeWorkspaceId);
 
   const mainLinks = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, badge: null },
-    { name: "Conversations", href: "/conversations", icon: MessageSquare, badge: "Live" },
-    { name: "Leads", href: "/leads", icon: Users, badge: null },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, badge: null, mobileLabel: "Dashboard" },
+    { name: "Conversations", href: "/conversations", icon: MessageSquare, badge: "Live", mobileLabel: "Chats" },
+    { name: "Leads", href: "/leads", icon: Users, badge: null, mobileLabel: "Leads" },
   ];
 
   const systemLinks = [
-    { name: "Settings & AI Rules", href: "/settings", icon: Settings, badge: null },
+    { name: "Settings & AI Rules", href: "/settings", icon: Settings, badge: null, mobileLabel: "Settings" },
   ];
+
+  const allMobileLinks = [...mainLinks, ...systemLinks];
 
   return (
     <>
@@ -144,26 +146,28 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#090a10]/95 backdrop-blur-lg border-t border-border flex items-center justify-around p-2 z-50">
-        {[...mainLinks, ...systemLinks].map((link) => {
-          const Icon = link.icon;
-          const isActive = pathname.startsWith(link.href);
-          return (
-            <Link 
-              key={link.name} 
-              href={link.href}
-              className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all ${
-                isActive 
-                  ? "text-accent font-bold bg-accent/10 border border-accent/20" 
-                  : "text-textMuted"
-              }`}
-            >
-              <Icon size={18} />
-              <span className="text-[10px] tracking-tight">{link.name}</span>
-            </Link>
-          );
-        })}
+      {/* Mobile Bottom Navigation — Native app-quality tab bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#090a10]/95 backdrop-blur-lg border-t border-border z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="flex items-center justify-around px-1 py-1.5">
+          {allMobileLinks.map((link) => {
+            const Icon = link.icon;
+            const isActive = pathname.startsWith(link.href);
+            return (
+              <Link 
+                key={link.name} 
+                href={link.href}
+                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 rounded-xl transition-all min-w-[56px] min-h-[44px] ${
+                  isActive 
+                    ? "text-accent font-bold bg-accent/10" 
+                    : "text-textMuted active:text-textPrimary"
+                }`}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-[10px] leading-tight tracking-tight">{link.mobileLabel}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
     </>
   );

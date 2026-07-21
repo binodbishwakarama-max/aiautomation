@@ -179,7 +179,7 @@ export default function LeadsPage() {
   });
 
   return (
-    <div className="flex flex-col h-full gap-6 p-6 pb-24 max-w-7xl mx-auto w-full select-none">
+    <div className="flex flex-col h-full gap-4 sm:gap-6 p-4 sm:p-6 pb-24 max-w-7xl mx-auto w-full select-none">
       
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -192,17 +192,17 @@ export default function LeadsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <button 
             onClick={exportCSV}
-            className="btn-secondary text-xs font-medium"
+            className="btn-secondary text-xs font-medium justify-center"
           >
             <Download size={14} />
             <span>Export CSV</span>
           </button>
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary text-xs"
+            className="btn-primary text-xs justify-center"
           >
             <Plus size={14} />
             <span>Add Manual Lead</span>
@@ -282,7 +282,8 @@ export default function LeadsPage() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-textPrimary">
+            {/* Desktop Table — hidden below md */}
+            <table className="w-full text-left text-xs text-textPrimary hidden md:table">
               <thead className="bg-surface/80 border-b border-border font-mono text-textMuted">
                 <tr>
                   <th className="px-6 py-3.5 font-bold uppercase tracking-wider text-[10px]">Lead Contact</th>
@@ -359,6 +360,64 @@ export default function LeadsPage() {
                 )}
               </tbody>
             </table>
+
+            {/* Mobile Card View — shown only below md */}
+            <div className="md:hidden divide-y divide-border/40">
+              {filteredLeads.length === 0 ? (
+                <div className="py-12 text-center text-textMuted text-xs font-mono">
+                  No leads matching filter criteria.
+                </div>
+              ) : (
+                <AnimatePresence>
+                  {filteredLeads.map((lead, idx) => (
+                    <motion.div
+                      key={lead.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                      className="p-4 active:bg-white/[0.02] transition-colors cursor-pointer"
+                      onClick={() => openDrawer(lead)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-accent/15 border border-accent/30 text-accent font-bold flex items-center justify-center text-xs shrink-0">
+                            {lead.name ? lead.name.charAt(0).toUpperCase() : "?"}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-textPrimary text-xs truncate">{lead.name || "Unknown Lead"}</p>
+                            <p className="text-[10px] text-textMuted font-mono truncate">{lead.phone}</p>
+                          </div>
+                        </div>
+                        <ChevronRight size={14} className="text-textMuted shrink-0 mt-1" />
+                      </div>
+                      <div className="flex items-center gap-2 mt-2.5 ml-12">
+                        <select 
+                          value={lead.status}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            updateStatus(lead.id, e.target.value as LeadStatus);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`appearance-none bg-surface outline-none px-2.5 py-1 rounded-lg border text-[10px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors ${statusColors[lead.status] || statusColors.new}`}
+                        >
+                          <option value="new" className="text-textPrimary bg-[#0e1018]">NEW</option>
+                          <option value="contacted" className="text-textPrimary bg-[#0e1018]">CONTACTED</option>
+                          <option value="enrolled" className="text-textPrimary bg-[#0e1018]">ENROLLED</option>
+                          <option value="lost" className="text-textPrimary bg-[#0e1018]">LOST</option>
+                        </select>
+                        <span className="capitalize px-2 py-0.5 bg-surface border border-border text-textMuted rounded-lg text-[10px] font-mono">
+                          {lead.source}
+                        </span>
+                        <span className="text-[10px] text-textMuted font-mono ml-auto">
+                          {format(new Date(lead.created_at), 'MMM d')}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              )}
+            </div>
           </div>
         )}
       </div>

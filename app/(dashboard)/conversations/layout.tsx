@@ -104,7 +104,7 @@ export default function ConversationsLayout({ children }: { children: React.Reac
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] p-4 lg:p-6 gap-6 max-w-7xl mx-auto w-full">
+    <div className="flex h-[calc(100vh-4rem-60px)] md:h-[calc(100vh-4rem)] p-3 sm:p-4 lg:p-6 gap-4 sm:gap-6 max-w-7xl mx-auto w-full">
       
       {/* Master List Column */}
       <div 

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function PageWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex-1 overflow-auto bg-background p-8">
+    <main className="flex-1 overflow-auto bg-background p-3 sm:p-6 lg:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

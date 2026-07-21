@@ -28,14 +28,14 @@ export default function TopBar() {
   };
 
   return (
-    <header className="h-16 bg-[#08090f]/90 backdrop-blur-md border-b border-border flex items-center justify-between px-6 z-20 shrink-0 select-none">
+    <header className="h-14 sm:h-16 bg-[#08090f]/90 backdrop-blur-md border-b border-border flex items-center justify-between px-3 sm:px-4 md:px-6 z-20 shrink-0 select-none">
       
       {/* Left: Breadcrumb & Title */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-xs font-mono text-textMuted">
-          <span className="hover:text-textPrimary cursor-pointer">workspace</span>
-          <span>/</span>
-          <span className="text-textPrimary font-semibold font-sans">{pageTitle}</span>
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-mono text-textMuted min-w-0">
+          <span className="hidden sm:inline hover:text-textPrimary cursor-pointer">workspace</span>
+          <span className="hidden sm:inline">/</span>
+          <span className="text-textPrimary font-semibold font-sans truncate">{pageTitle}</span>
         </div>
       </div>
       
@@ -56,23 +56,23 @@ export default function TopBar() {
       </div>
 
       {/* Right Actions & Controls */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
         
-        {/* Real-time Status Indicator */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-mono text-accent">
+        {/* Real-time Status Indicator — hidden on mobile & tablet */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-mono text-accent">
           <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
           <Radio size={12} />
           <span>Meta Webhook 200 OK</span>
         </div>
 
-        {/* Workspace Selector */}
-        <div className="flex items-center gap-2">
+        {/* Workspace Selector — hidden on mobile (already in sidebar context) */}
+        <div className="hidden sm:flex items-center gap-2">
           <div className="relative">
             <select
               value={activeWorkspaceId || ""}
               onChange={(e) => switchWorkspace(e.target.value)}
               disabled={loading || workspaces.length === 0}
-              className="appearance-none bg-surface hover:bg-surfaceHover border border-border rounded-xl pl-8 pr-8 py-1.5 text-xs font-medium text-textPrimary focus:outline-none focus:border-accent/40 transition-all cursor-pointer select-none min-w-[170px]"
+              className="appearance-none bg-surface hover:bg-surfaceHover border border-border rounded-xl pl-8 pr-8 py-1.5 text-xs font-medium text-textPrimary focus:outline-none focus:border-accent/40 transition-all cursor-pointer select-none min-w-[140px] md:min-w-[170px]"
             >
               {workspaces.map((ws) => (
                 <option key={ws.businessId} value={ws.businessId} className="bg-[#0e1018] text-textPrimary">
@@ -84,8 +84,8 @@ export default function TopBar() {
             <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-textMuted pointer-events-none" />
           </div>
 
-          {/* User Role Badge */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-surface border border-border text-[10px] font-mono uppercase font-bold text-textMuted rounded-xl">
+          {/* User Role Badge — hidden below lg */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-surface border border-border text-[10px] font-mono uppercase font-bold text-textMuted rounded-xl">
             <Shield size={11} className="text-accent" />
             <span>{role || "owner"}</span>
           </div>
@@ -100,10 +100,10 @@ export default function TopBar() {
         {/* Sign Out Button */}
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs text-textMuted hover:text-red-400 hover:border-red-400/30 hover:bg-red-500/10 transition-all font-medium"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl border border-border text-xs text-textMuted hover:text-red-400 hover:border-red-400/30 hover:bg-red-500/10 transition-all font-medium min-w-[36px] min-h-[36px] justify-center"
         >
           <LogOut size={13} />
-          <span className="hidden sm:inline">Sign out</span>
+          <span className="hidden md:inline">Sign out</span>
         </button>
       </div>
     </header>

@@ -71,7 +71,7 @@ export default function SignupPage() {
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md glass-card-accent p-8 sm:p-10 rounded-3xl border border-white/10 shadow-2xl relative z-10"
+        className="w-full max-w-md glass-card-accent p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl relative z-10"
       >
         <div className="flex flex-col items-center text-center mb-8">
           <Link href="/" className="mb-4">

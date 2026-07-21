@@ -26,7 +26,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto p-6 pb-24 select-none">
+    <div className="flex flex-col gap-4 sm:gap-6 max-w-5xl mx-auto p-4 sm:p-6 pb-24 select-none">
       <FacebookSDKLoader />
       
       {/* Header & Save Action */}
@@ -43,7 +43,7 @@ export default function SettingsPage() {
         <button
           onClick={form.saveSettings}
           disabled={form.savingSettings || !form.canManageWorkspace}
-          className="btn-primary text-xs font-bold shrink-0 shadow-glow-primary"
+          className="btn-primary text-xs font-bold shrink-0 shadow-glow-primary w-full sm:w-auto justify-center"
         >
           <Save size={14} />
           <span>{form.savingSettings ? "Saving Settings..." : "Save Configuration"}</span>

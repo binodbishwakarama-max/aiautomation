@@ -309,9 +309,16 @@ export default function ConversationDetailPage({ params }: { params: { id: strin
       </div>
 
       {/* Right Column: Lead Info & Status Actions */}
+      {/* Mobile backdrop overlay */}
+      {showInfoPanel && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-10"
+          onClick={() => setShowInfoPanel(false)}
+        />
+      )}
       <div className={cn(
-        "absolute lg:static top-0 right-0 h-full w-[300px] bg-[#0c0c12] lg:bg-transparent shrink-0 z-20 flex flex-col transition-transform duration-300 transform border-l border-border/40",
-        showInfoPanel ? "translate-x-0" : "translate-x-full lg:translate-x-0 shadow-2xl lg:shadow-none"
+        "absolute lg:static top-0 right-0 h-full w-full sm:w-[300px] bg-[#0c0c12] lg:bg-transparent shrink-0 z-20 flex flex-col transition-transform duration-300 transform border-l border-border/40",
+        showInfoPanel ? "translate-x-0 shadow-2xl lg:shadow-none" : "translate-x-full lg:translate-x-0"
       )}>
         <div className="p-4 border-b border-border bg-[#0c0c12] lg:hidden flex items-center justify-between">
           <h3 className="text-xs font-bold text-textPrimary uppercase tracking-wider">Lead Information</h3>

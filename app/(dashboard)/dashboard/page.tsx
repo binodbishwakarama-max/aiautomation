@@ -144,7 +144,7 @@ export default function DashboardPage() {
   const totalLeadsCount = leadPipeline.new + leadPipeline.contacted + leadPipeline.enrolled + leadPipeline.lost;
 
   return (
-    <div className="flex flex-col gap-6 p-6 pb-24 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 pb-24 max-w-7xl mx-auto">
       
       {/* Workspace Overview Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -157,12 +157,12 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link href="/settings" className="btn-secondary text-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <Link href="/settings" className="btn-secondary text-xs justify-center">
             <Sliders size={14} />
-            <span>Manage FAQ Index</span>
+            <span>Manage FAQ</span>
           </Link>
-          <Link href="/conversations" className="btn-primary text-xs">
+          <Link href="/conversations" className="btn-primary text-xs justify-center">
             <MessageSquare size={14} />
             <span>Live Inbox</span>
           </Link>
@@ -253,7 +253,7 @@ export default function DashboardPage() {
         
         {/* Left Column: Recent Conversations Feed */}
         <div className="lg:col-span-2 glass-card rounded-2xl overflow-hidden flex flex-col border border-border">
-          <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface/40">
+          <div className="px-4 sm:px-6 py-4 border-b border-border flex justify-between items-center bg-surface/40">
             <div className="flex items-center gap-2">
               <Activity size={16} className="text-accent" />
               <h2 className="font-bold text-xs uppercase tracking-wider text-textPrimary">Recent Live Threads</h2>
@@ -271,7 +271,7 @@ export default function DashboardPage() {
               </div>
             ) : (
               recentConvos.map((conv) => (
-                <Link key={conv.id} href={`/conversations/${conv.id}`} className="block px-6 py-4 hover:bg-white/[0.02] transition-colors group">
+                <Link key={conv.id} href={`/conversations/${conv.id}`} className="block px-4 sm:px-6 py-3 sm:py-4 hover:bg-white/[0.02] transition-colors group">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-grow pr-4">
                       <div className="flex items-center gap-3 mb-1">
