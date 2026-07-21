@@ -78,10 +78,25 @@ export default function WhatsAppCredentialsCard({
     const errorParam = urlParams.get("error_description") || urlParams.get("error");
 
     if (errorParam) {
+      setActiveStep(2);
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
       setOauthError(errorParam);
-    } else if (code && state === workspaceId) {
+    } else if (code) {
+      setActiveStep(2);
+
+      if (!workspaceId) {
+        // Wait until workspaceId is loaded from useWorkspace hook
+        return;
+      }
+
+      if (state && state !== workspaceId) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        setOauthError("State mismatch during OAuth return. Please try connecting again.");
+        return;
+      }
+
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
 
@@ -104,7 +119,7 @@ export default function WhatsAppCredentialsCard({
           }
         } catch (err) {
           console.error("WhatsApp OAuth exchange error:", err);
-          setOauthError("An unexpected error occurred during setup.");
+          setOauthError(err instanceof Error ? err.message : "An unexpected error occurred during setup.");
         } finally {
           setConnectingOauth(false);
         }
@@ -177,6 +192,24 @@ export default function WhatsAppCredentialsCard({
           </span>
         )}
       </div>
+
+      {/* Global OAuth Progress & Error Banners */}
+      {connectingOauth && (
+        <div className="mb-6 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold flex items-center gap-3 animate-pulse">
+          <div className="w-4 h-4 rounded-full border-2 border-blue-400 border-t-transparent animate-spin shrink-0" />
+          <span>Exchanging Facebook authorization code and setting up WhatsApp Business Account...</span>
+        </div>
+      )}
+
+      {oauthError && (
+        <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-start gap-3">
+          <XCircle size={16} className="shrink-0 mt-0.5 text-rose-400" />
+          <div className="flex-1">
+            <div className="font-bold mb-0.5 text-rose-300">WhatsApp Connection Alert</div>
+            <div className="text-rose-400/90 leading-relaxed">{oauthError}</div>
+          </div>
+        </div>
+      )}
 
       {/* Modern Google-Style Step Bar */}
       <div className="flex items-center justify-between max-w-3xl mx-auto mb-10 relative">
