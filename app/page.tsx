@@ -154,6 +154,17 @@ export default function LandingPage() {
             </a>
             
             <div className="pt-2 border-t border-border flex flex-col gap-2.5">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new Event("open-pwa-prompt"));
+                  }
+                }}
+                className="w-full py-3 px-3 rounded-lg bg-accent/15 border border-accent/40 text-accent font-bold text-sm min-h-[44px] flex items-center justify-center gap-2"
+              >
+                <span>Install ReplySync Mobile App</span>
+              </button>
               <Link 
                 href="/login" 
                 onClick={() => setMobileMenuOpen(false)}
