@@ -80,6 +80,12 @@ interface FBWindow {
 
   const handleFacebookConnect = () => {
     const fb = (window as unknown as FBWindow).FB;
+    console.log("Facebook Connect Triggered:", {
+      appId: process.env.NEXT_PUBLIC_META_APP_ID,
+      configId: process.env.NEXT_PUBLIC_META_CONFIG_ID,
+      sdkLoaded: !!fb
+    });
+
     if (!fb) {
       setOauthError("Facebook SDK not loaded. Please wait a moment or configure manually.");
       return;
