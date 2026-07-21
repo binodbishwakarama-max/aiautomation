@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CheckCircle2,
   Copy,
@@ -69,63 +69,68 @@ export default function WhatsAppCredentialsCard({
   const [connectingOauth, setConnectingOauth] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
 
-interface FBWindow {
-  FB?: {
-    login: (
-      callback: (response: { authResponse?: { code?: string } }) => void,
-      options?: { config_id?: string; response_type?: string; override_default_response_type?: boolean }
-    ) => void;
-  };
-}
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    const state = urlParams.get("state");
+    const errorParam = urlParams.get("error_description") || urlParams.get("error");
+
+    if (errorParam) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      setOauthError(errorParam);
+    } else if (code && state === workspaceId) {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      const exchangeToken = async () => {
+        setConnectingOauth(true);
+        setOauthError(null);
+        try {
+          const res = await fetch("/api/workspace/whatsapp-oauth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code, workspaceId }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            window.location.reload();
+          } else {
+            setOauthError(data.error || "Failed to exchange authorization code.");
+          }
+        } catch (err) {
+          console.error("WhatsApp OAuth exchange error:", err);
+          setOauthError("An unexpected error occurred during setup.");
+        } finally {
+          setConnectingOauth(false);
+        }
+      };
+
+      void exchangeToken();
+    }
+  }, [workspaceId]);
 
   const handleFacebookConnect = () => {
-    const fb = (window as unknown as FBWindow).FB;
-    console.log("--- FB Connect Debug Info ---");
-    console.log("App ID:", process.env.NEXT_PUBLIC_META_APP_ID);
-    console.log("Config ID:", process.env.NEXT_PUBLIC_META_CONFIG_ID);
-    console.log("SDK Loaded:", !!fb);
-    console.log("-----------------------------");
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
 
-    if (!fb) {
-      setOauthError("Facebook SDK not loaded. Please wait a moment or configure manually.");
+    if (!appId || !configId) {
+      setOauthError("Meta App ID or Configuration ID is missing. Please configure them in your settings.");
       return;
     }
+
     setOauthError(null);
     setConnectingOauth(true);
 
-    fb.login(
-      async (response: { authResponse?: { code?: string } }) => {
-        if (response.authResponse && response.authResponse.code) {
-          const code = response.authResponse.code;
-          try {
-            const res = await fetch("/api/workspace/whatsapp-oauth", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code, workspaceId }),
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-              window.location.reload();
-            } else {
-              setOauthError(data.error || "Failed to exchange authorization code.");
-            }
-          } catch (err) {
-            console.error("WhatsApp OAuth exchange error:", err);
-            setOauthError("An unexpected error occurred during setup.");
-          } finally {
-            setConnectingOauth(false);
-          }
-        } else {
-          setOauthError("Facebook Login was cancelled or failed to authenticate.");
-          setConnectingOauth(false);
-        }
-      },
-      {
-        config_id: process.env.NEXT_PUBLIC_META_CONFIG_ID,
-        response_type: "code",
-        override_default_response_type: true,
-      }
-    );
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const redirectUri = `${origin}/settings`;
+    const oauthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&config_id=${configId}&response_type=code&state=${workspaceId}`;
+
+    window.location.href = oauthUrl;
   };
 
   const handleCopyUrl = () => {
