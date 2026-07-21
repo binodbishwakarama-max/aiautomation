@@ -2,13 +2,13 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'ReplySync CRM',
+    name: 'ReplySync Enterprise',
     short_name: 'ReplySync',
-    description: 'WhatsApp AI Automation & B2B CRM Dashboard',
+    description: 'WhatsApp AI Signal Dispatch & Lead Orchestration Engine',
     start_url: '/',
     display: 'standalone',
-    background_color: '#09090b', // hsl(240, 10%, 4%) which matches --background
-    theme_color: '#3b82f6', // Matches primary blue
+    background_color: '#0B1215',
+    theme_color: '#0B1215',
     orientation: 'portrait-primary',
     icons: [
       {
@@ -16,6 +16,12 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any'
+      },
+      {
+        src: '/icon',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable'
       }
     ],
   };
