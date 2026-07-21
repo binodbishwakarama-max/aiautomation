@@ -128,7 +128,7 @@ export default function WhatsAppCredentialsCard({
     const redirectUri = `${origin}/settings`;
     const oauthUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}&config_id=${configId}&response_type=code&state=${workspaceId}`;
+    )}&config_id=${configId}&response_type=code&override_default_response_type=true&state=${workspaceId}`;
 
     window.location.href = oauthUrl;
   };
