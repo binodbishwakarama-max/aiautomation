@@ -6,6 +6,7 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "background_color": "#0B1215",
   "theme_color": "#0B1215",
   "orientation": "portrait",
@@ -34,6 +35,32 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View analytics and active bots"
+    },
+    {
+      "name": "Broadcast",
+      "url": "/broadcasting",
+      "description": "Send a new WhatsApp broadcast"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
