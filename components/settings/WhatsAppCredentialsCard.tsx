@@ -137,9 +137,10 @@ export default function WhatsAppCredentialsCard({
 
   const handleFacebookConnect = () => {
     const appId = process.env.NEXT_PUBLIC_META_APP_ID;
-    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
+    const rawConfigId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
+    const configId = rawConfigId && rawConfigId !== "your_meta_config_id_here" ? rawConfigId : null;
 
-    if (!appId) {
+    if (!appId || appId === "your_meta_app_id_here") {
       setOauthError("Meta App ID (NEXT_PUBLIC_META_APP_ID) is missing. Please configure it in your Vercel Environment Variables.");
       return;
     }

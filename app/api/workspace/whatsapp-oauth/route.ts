@@ -45,15 +45,32 @@ export async function POST(request: Request) {
       redirect_uri,
     });
 
-    const tokenRes = await fetch(
+    let tokenRes = await fetch(
       `https://graph.facebook.com/v19.0/oauth/access_token?${tokenParams.toString()}`
     );
-    const tokenData = await tokenRes.json();
+    let tokenData = await tokenRes.json();
 
     if (!tokenRes.ok || tokenData.error) {
-      const errMsg = tokenData.error?.message || "Failed to exchange authorization code.";
-      logger.error("Meta OAuth token exchange error", { error: tokenData.error });
-      return NextResponse.json({ error: errMsg }, { status: 400 });
+      // Fallback for codes obtained via FB JS SDK popup (which expect empty redirect_uri)
+      const popupTokenParams = new URLSearchParams({
+        client_id: appId,
+        client_secret: appSecret,
+        code,
+        redirect_uri: "",
+      });
+      const popupRes = await fetch(
+        `https://graph.facebook.com/v19.0/oauth/access_token?${popupTokenParams.toString()}`
+      );
+      const popupData = await popupRes.json();
+
+      if (popupRes.ok && !popupData.error) {
+        tokenRes = popupRes;
+        tokenData = popupData;
+      } else {
+        const errMsg = tokenData.error?.message || popupData.error?.message || "Failed to exchange authorization code.";
+        logger.error("Meta OAuth token exchange error", { error: tokenData.error || popupData.error });
+        return NextResponse.json({ error: errMsg }, { status: 400 });
+      }
     }
 
     const shortLivedToken = tokenData.access_token;
