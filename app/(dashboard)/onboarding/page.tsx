@@ -15,7 +15,8 @@ import {
   Copy,
   Plus,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
 import Confetti from "react-confetti";
@@ -306,50 +307,120 @@ export default function OnboardingPage() {
             {step === 3 && (
               <motion.div key="step3" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.3 }} className="space-y-5">
                 <div>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-textPrimary mb-1">Connect WhatsApp</h2>
-                  <p className="text-[11px] text-textMuted font-medium">Link your Meta Developer account credentials.</p>
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-textPrimary mb-1">Activate WhatsApp AI Assistant</h2>
+                  <p className="text-[11px] text-textMuted font-medium">Connect your Meta WhatsApp account in one click or test in the live AI Sandbox first.</p>
                 </div>
 
-                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                  <div className="p-3 bg-background border border-border rounded-lg">
-                    <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-textPrimary">
-                      <li>Create an app on <a href="https://developers.facebook.com" target="_blank" className="text-primary hover:underline font-semibold">developers.facebook.com</a></li>
-                      <li>Add the <b>WhatsApp</b> product</li>
-                      <li>Copy your ID & Token below</li>
-                    </ol>
+                <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
+                  {/* Hero One-Click Facebook Connection */}
+                  <div className="p-5 bg-white/[0.02] border border-white/10 rounded-xl flex flex-col items-center text-center space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-[#1877f2]/15 border border-[#1877f2]/30 flex items-center justify-center text-[#1877f2] font-bold text-lg">
+                      f
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-textPrimary">One-Click WhatsApp Setup</h3>
+                      <p className="text-[11px] text-textMuted mt-0.5 max-w-sm">
+                        Automatically link your WhatsApp Business number. No manual API keys required.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+                        const rawConfigId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
+                        const configId = rawConfigId && rawConfigId !== "your_meta_config_id_here" ? rawConfigId : null;
+                        const origin = typeof window !== "undefined" ? window.location.origin : "";
+                        const redirectUri = `${origin}/settings`;
+                        
+                        if (!appId || appId === "your_meta_app_id_here") {
+                          error("Meta App ID is missing in environment variables. Try AI Simulator Sandbox First below.");
+                          return;
+                        }
+
+                        const oauthUrl = configId
+                          ? `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+                              redirectUri
+                            )}&config_id=${configId}&response_type=code&override_default_response_type=true&state=${activeWorkspaceId}`
+                          : `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+                              redirectUri
+                            )}&scope=whatsapp_business_management,whatsapp_business_messaging&response_type=code&state=${activeWorkspaceId}`;
+
+                        window.location.href = oauthUrl;
+                      }}
+                      className="px-5 py-2.5 bg-[#1877f2] hover:bg-[#156bec] text-white font-bold text-xs rounded-lg transition-all min-h-[40px] flex items-center justify-center gap-2 w-full max-w-xs shadow-md cursor-pointer active:scale-95"
+                    >
+                      <MessageCircle size={14} /> Connect with Facebook
+                    </button>
                   </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-textMuted mb-1.5">WhatsApp Phone ID</label>
-                      <input type="text" value={phoneId} onChange={e=>setPhoneId(e.target.value)} placeholder="e.g. 104593..." className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-textPrimary focus:border-border/80 focus:outline-none" />
+                  {/* Sandbox Option: Try AI Simulator Sandbox First */}
+                  <div className="p-4 bg-accent/5 border border-accent/20 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="text-center sm:text-left">
+                      <div className="flex items-center gap-1.5 text-accent text-xs font-bold mb-0.5">
+                        <Sparkles size={14} /> Test AI Simulator Sandbox First
+                      </div>
+                      <p className="text-[10px] text-textMuted">
+                        Want to test your AI answers in the browser before connecting Meta? Jump directly to the live Sandbox!
+                      </p>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-textMuted mb-1.5">Access Token</label>
-                      <input type="password" value={accessToken} onChange={e=>setAccessToken(e.target.value)} placeholder="EAA..." className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-textPrimary focus:border-border/80 focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-textMuted mb-1.5">Meta App Secret</label>
-                      <input type="password" value={appSecret} onChange={e=>setAppSecret(e.target.value)} placeholder="Required to verify webhook signatures" className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-textPrimary focus:border-border/80 focus:outline-none" />
-                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowConfetti(true);
+                        success("Knowledge Base Ready! Launching AI Sandbox...");
+                        setTimeout(() => {
+                          router.push("/dashboard");
+                        }, 1500);
+                      }}
+                      className="px-3.5 py-2 bg-accent/15 border border-accent/30 text-accent font-bold text-xs rounded-lg hover:bg-accent/25 transition-colors whitespace-nowrap shrink-0 min-h-[36px] flex items-center gap-1.5"
+                    >
+                      Launch AI Sandbox <ArrowRight size={13} />
+                    </button>
                   </div>
 
-                  <div className="p-3.5 bg-background border border-border rounded-lg mt-2">
-                    <p className="text-[10px] font-bold text-textMuted uppercase mb-2 tracking-wider">Webhook Configuration</p>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-textMuted w-10 font-bold uppercase tracking-wider">URL</span>
-                        <div className="flex-grow bg-[#0c0c12] border border-border rounded px-2 py-1 text-xs font-mono text-textPrimary truncate">{WebhookURL}</div>
-                        <button onClick={() => copyToClipboard(WebhookURL)} className="p-1 hover:bg-white/[0.04] rounded text-textMuted transition-colors"><Copy size={12}/></button>
+                  {/* Manual Developer Setup (Collapsible) */}
+                  <details className="group border border-border rounded-xl bg-background/50 overflow-hidden">
+                    <summary className="px-4 py-3 text-xs font-semibold text-textMuted group-open:text-textPrimary cursor-pointer flex items-center justify-between font-mono">
+                      <span>Advanced: Manual Developer API Credentials</span>
+                      <span className="text-[10px] text-accent group-open:hidden">+ Expand</span>
+                    </summary>
+
+                    <div className="p-4 border-t border-border space-y-4">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-textMuted mb-1.5">WhatsApp Phone ID</label>
+                          <input type="text" value={phoneId} onChange={e=>setPhoneId(e.target.value)} placeholder="e.g. 104593..." className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-textPrimary focus:border-border/80 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-textMuted mb-1.5">Access Token</label>
+                          <input type="password" value={accessToken} onChange={e=>setAccessToken(e.target.value)} placeholder="EAA..." className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-textPrimary focus:border-border/80 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-textMuted mb-1.5">Meta App Secret</label>
+                          <input type="password" value={appSecret} onChange={e=>setAppSecret(e.target.value)} placeholder="Required to verify webhook signatures" className="w-full bg-background border border-border rounded-lg px-3 py-2 font-mono text-xs text-textPrimary focus:border-border/80 focus:outline-none" />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-textMuted w-10 font-bold uppercase tracking-wider">Token</span>
-                        <div className="flex-grow bg-[#0c0c12] border border-border rounded px-2 py-1 text-xs font-mono text-textPrimary truncate">{verifyToken}</div>
-                        <button onClick={() => copyToClipboard(verifyToken)} className="p-1 hover:bg-white/[0.04] rounded text-textMuted transition-colors"><Copy size={12}/></button>
+
+                      <div className="p-3 bg-background border border-border rounded-lg">
+                        <p className="text-[10px] font-bold text-textMuted uppercase mb-2 tracking-wider">Webhook Details</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-textMuted w-10 font-bold uppercase tracking-wider">URL</span>
+                            <div className="flex-grow bg-[#0c0c12] border border-border rounded px-2 py-1 text-xs font-mono text-textPrimary truncate">{WebhookURL}</div>
+                            <button onClick={() => copyToClipboard(WebhookURL)} className="p-1 hover:bg-white/[0.04] rounded text-textMuted transition-colors"><Copy size={12}/></button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-textMuted w-10 font-bold uppercase tracking-wider">Token</span>
+                            <div className="flex-grow bg-[#0c0c12] border border-border rounded px-2 py-1 text-xs font-mono text-textPrimary truncate">{verifyToken}</div>
+                            <button onClick={() => copyToClipboard(verifyToken)} className="p-1 hover:bg-white/[0.04] rounded text-textMuted transition-colors"><Copy size={12}/></button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
+                  </details>
+
                   {testError && (
                     <div className="p-2.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg flex items-center gap-2">
                       <AlertCircle size={14}/> {testError}
@@ -362,7 +433,7 @@ export default function OnboardingPage() {
                     <ArrowLeft size={14} /> Back
                   </button>
                   <button onClick={handleTestConnection} disabled={testing} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-background font-bold rounded-lg hover:bg-primary/95 transition-colors disabled:opacity-50 text-xs shadow-none">
-                    {testing ? "Verifying..." : "I've connected WhatsApp"} <CheckCircle2 size={14} />
+                    {testing ? "Verifying..." : "Save Manual Setup"} <CheckCircle2 size={14} />
                   </button>
                 </div>
               </motion.div>

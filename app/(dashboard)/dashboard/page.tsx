@@ -21,12 +21,16 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { VolumeChart } from "@/components/dashboard/VolumeChart";
 import { StatusDonutChart } from "@/components/dashboard/StatusDonutChart";
+import AiSimulatorWidget from "@/components/dashboard/AiSimulatorWidget";
+import type { FAQ } from "@/lib/types";
 
 const supabase = createClient();
 
 export default function DashboardPage() {
   const { activeWorkspaceId, loading: workspaceLoading } = useWorkspace();
   const [loading, setLoading] = useState(true);
+  const [businessName, setBusinessName] = useState("ReplySync Workspace");
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [stats, setStats] = useState({
     conversationsToday: 0,
     leadsThisWeek: 0,
@@ -55,18 +59,21 @@ export default function DashboardPage() {
         const lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate() - 7);
 
-        // Fetch Conversations
-        const { data: convos } = await supabase
-          .from("conversations")
-          .select("id, customer_phone, customer_name, status, last_message, last_message_at")
-          .eq("business_id", activeWorkspaceId)
-          .order("last_message_at", { ascending: false });
+        // Fetch Business & FAQs
+        const [{ data: bizData }, { data: faqsData }, { data: convos }, { data: leads }] = await Promise.all([
+          supabase.from("businesses").select("name").eq("id", activeWorkspaceId).maybeSingle(),
+          supabase.from("faqs").select("id, business_id, question, answer, display_order, created_at").eq("business_id", activeWorkspaceId).order("display_order", { ascending: true }),
+          supabase.from("conversations").select("id, customer_phone, customer_name, status, last_message, last_message_at").eq("business_id", activeWorkspaceId).order("last_message_at", { ascending: false }),
+          supabase.from("leads").select("status, created_at").eq("business_id", activeWorkspaceId),
+        ]);
 
-        // Fetch Leads
-        const { data: leads } = await supabase
-          .from("leads")
-          .select("status, created_at")
-          .eq("business_id", activeWorkspaceId);
+        if (bizData?.name) {
+          setBusinessName(bizData.name);
+        }
+
+        if (faqsData) {
+          setFaqs(faqsData as FAQ[]);
+        }
 
         if (convos) {
           const typedConvos = convos;
@@ -247,6 +254,11 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      {/* Interactive AI WhatsApp Simulator Sandbox */}
+      <section className="w-full">
+        <AiSimulatorWidget faqs={faqs} businessName={businessName} />
+      </section>
 
       {/* 2. MAIN TELEMETRY GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
