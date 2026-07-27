@@ -27,7 +27,7 @@ describe("crypto helpers", () => {
 
   it("supports dev fallback when APP_ENCRYPTION_KEY is unset in dev", () => {
     delete process.env.APP_ENCRYPTION_KEY;
-    process.env.NODE_ENV = "development";
+    (process.env as Record<string, string>).NODE_ENV = "development";
     const encrypted = encryptSecret("fallback-test");
     expect(decryptSecret(encrypted)).toBe("fallback-test");
   });

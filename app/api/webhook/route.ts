@@ -116,8 +116,12 @@ export async function POST(request: Request) {
       isVoiceNote = true;
       const audioId = (message.audio as Record<string, string>).id;
       try {
+        if (!secrets.accessToken) {
+          throw new Error('WhatsApp access token is not configured for workspace.');
+        }
+
         const { downloadWhatsAppMedia } = await import('@/lib/whatsapp');
-        const { buffer, mimeType } = await downloadWhatsAppMedia(audioId, secrets.accessToken!);
+        const { buffer, mimeType } = await downloadWhatsAppMedia(audioId, secrets.accessToken);
         
         // Upload to Supabase Storage
         try {
