@@ -296,7 +296,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="p-3 rounded bg-background/60 border border-border text-[11px] font-mono text-textMuted">
-                  <span className="text-accent font-bold">Example Phone ID:</span> 104829384910293
+                  <span className="text-accent font-bold">Example Phone ID:</span> 123456789012345
                 </div>
               </div>
 
