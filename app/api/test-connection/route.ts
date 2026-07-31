@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getWorkspaceMembershipOrThrow, HttpError } from "@/lib/server-workspace";
-import { parseBody, testConnectionSchema } from "@/lib/validation";
+import { parseMetaGraphApiError } from "@/lib/whatsapp";
 
 export async function POST(request: Request) {
   try {
@@ -36,9 +36,10 @@ export async function POST(request: Request) {
     if (response.ok) {
       return NextResponse.json({ success: true });
     } else {
-      const errorData = await response.json();
+      const responseText = await response.text();
+      const metaError = parseMetaGraphApiError(responseText);
       return NextResponse.json(
-        { success: false, error: errorData.error?.message || "Invalid credentials." },
+        { success: false, error: metaError.message, category: metaError.category },
         { status: 400 }
       );
     }

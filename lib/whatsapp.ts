@@ -22,6 +22,85 @@ function isNumericMetaId(value: string) {
   return /^\d+$/.test(value);
 }
 
+export type MetaGraphApiErrorCategory =
+  | 'EXPIRED_TOKEN'
+  | 'INVALID_TOKEN'
+  | 'MISSING_TOKEN'
+  | 'MISSING_PERMISSIONS'
+  | 'UNKNOWN_META_ERROR';
+
+export interface MetaGraphApiErrorDetail {
+  category: MetaGraphApiErrorCategory;
+  message: string;
+  code?: number;
+  subcode?: number;
+  rawError?: unknown;
+}
+
+export function parseMetaGraphApiError(responseText: string): MetaGraphApiErrorDetail {
+  if (!responseText || !responseText.trim()) {
+    return {
+      category: 'UNKNOWN_META_ERROR',
+      message: 'Empty error response from Meta Graph API.',
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(responseText);
+    const err = parsed.error;
+    if (err && typeof err === 'object') {
+      const code = typeof err.code === 'number' ? err.code : undefined;
+      const subcode = typeof err.error_subcode === 'number' ? err.error_subcode : undefined;
+      const rawMessage = typeof err.message === 'string' ? err.message : responseText;
+
+      if (code === 190 && subcode === 463) {
+        return {
+          category: 'EXPIRED_TOKEN',
+          message: `WhatsApp Access Token Expired (Code 190 / Subcode 463): The Meta access token has expired. Please update your token in Workspace Settings.`,
+          code,
+          subcode,
+          rawError: err,
+        };
+      }
+
+      if (code === 190 || subcode === 467) {
+        return {
+          category: 'INVALID_TOKEN',
+          message: `WhatsApp Access Token Invalid or Revoked (Code 190): ${rawMessage}`,
+          code,
+          subcode,
+          rawError: err,
+        };
+      }
+
+      if (code === 10 || (code && code >= 200 && code <= 299)) {
+        return {
+          category: 'MISSING_PERMISSIONS',
+          message: `WhatsApp API Permission Denied (Code ${code}): Ensure your token has 'whatsapp_business_messaging' permissions.`,
+          code,
+          subcode,
+          rawError: err,
+        };
+      }
+
+      return {
+        category: 'UNKNOWN_META_ERROR',
+        message: rawMessage,
+        code,
+        subcode,
+        rawError: err,
+      };
+    }
+  } catch {
+    // If not valid JSON, fall back to string
+  }
+
+  return {
+    category: 'UNKNOWN_META_ERROR',
+    message: responseText,
+  };
+}
+
 async function callWhatsAppGraphApi(
   phoneNumberId: string,
   accessToken: string,
@@ -41,9 +120,12 @@ async function callWhatsAppGraphApi(
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    const parsedError = parseMetaGraphApiError(errorText);
     return {
       success: false as const,
-      error: await response.text(),
+      error: parsedError.message,
+      errorDetail: parsedError,
     };
   }
 

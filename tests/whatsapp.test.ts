@@ -1,9 +1,62 @@
 import { createHmac } from "crypto";
 import { describe, expect, it } from "vitest";
 
-import { verifyMetaWebhookSignature, extractProviderMessageId } from "../lib/whatsapp";
+import { verifyMetaWebhookSignature, extractProviderMessageId, parseMetaGraphApiError } from "../lib/whatsapp";
 
 describe("webhook helpers", () => {
+  describe("parseMetaGraphApiError", () => {
+    it("classifies expired token error (Code 190 / Subcode 463)", () => {
+      const errorJson = JSON.stringify({
+        error: {
+          message: "Error validating access token: Session has expired on Tuesday, 21-Jul-26 12:00:00 PDT.",
+          type: "OAuthException",
+          code: 190,
+          error_subcode: 463,
+        },
+      });
+
+      const parsed = parseMetaGraphApiError(errorJson);
+      expect(parsed.category).toBe("EXPIRED_TOKEN");
+      expect(parsed.code).toBe(190);
+      expect(parsed.subcode).toBe(463);
+      expect(parsed.message).toContain("WhatsApp Access Token Expired");
+    });
+
+    it("classifies invalid token error (Code 190)", () => {
+      const errorJson = JSON.stringify({
+        error: {
+          message: "Invalid OAuth access token.",
+          type: "OAuthException",
+          code: 190,
+        },
+      });
+
+      const parsed = parseMetaGraphApiError(errorJson);
+      expect(parsed.category).toBe("INVALID_TOKEN");
+      expect(parsed.code).toBe(190);
+    });
+
+    it("classifies permission denied error (Code 10)", () => {
+      const errorJson = JSON.stringify({
+        error: {
+          message: "Application does not have permission.",
+          type: "OAuthException",
+          code: 10,
+        },
+      });
+
+      const parsed = parseMetaGraphApiError(errorJson);
+      expect(parsed.category).toBe("MISSING_PERMISSIONS");
+      expect(parsed.code).toBe(10);
+    });
+
+    it("handles fallback for non-JSON string errors", () => {
+      const parsed = parseMetaGraphApiError("Raw gateway timeout");
+      expect(parsed.category).toBe("UNKNOWN_META_ERROR");
+      expect(parsed.message).toBe("Raw gateway timeout");
+    });
+  });
+
   describe("verifyMetaWebhookSignature", () => {
     it("validates Meta webhook signatures", () => {
       const rawBody = JSON.stringify({ entry: [{ id: "1" }] });
