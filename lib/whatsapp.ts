@@ -172,7 +172,7 @@ export async function downloadWhatsAppMedia(mediaId: string, accessToken: string
   const arrayBuffer = await binaryResponse.arrayBuffer();
   return {
     buffer: Buffer.from(arrayBuffer),
-    mimeType: metaData.mime_type
+    mimeType: metaData.mime_type || 'audio/ogg',
   };
 }
 

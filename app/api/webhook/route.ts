@@ -154,10 +154,11 @@ export async function POST(request: Request) {
           body: (() => {
             const formData = new FormData();
             // WhatsApp typical ogg format
+            const safeMimeType = mimeType || 'audio/ogg';
             let ext = "ogg";
-            if (mimeType.includes("mp4")) ext = "mp4";
-            if (mimeType.includes("mpeg")) ext = "mp3";
-            const file = new File([buffer], `audio.${ext}`, { type: mimeType });
+            if (safeMimeType.includes("mp4")) ext = "mp4";
+            if (safeMimeType.includes("mpeg")) ext = "mp3";
+            const file = new File([buffer], `audio.${ext}`, { type: safeMimeType });
             formData.append("file", file);
             formData.append("model", "whisper-large-v3");
             formData.append("temperature", "0");
