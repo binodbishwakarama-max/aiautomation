@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { getWorkspaceMembershipOrThrow, HttpError } from "@/lib/server-workspace";
+import { getWorkspaceMembershipOrThrow, getWorkspaceSecretsOrThrow, HttpError } from "@/lib/server-workspace";
+import { parseBody, testConnectionSchema } from "@/lib/validation";
 import { parseMetaGraphApiError } from "@/lib/whatsapp";
 
 export async function POST(request: Request) {
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: parsed.error }, { status: 400 });
     }
 
-    const { workspaceId, phoneNumberId, accessToken } = parsed.data;
+    const { workspaceId, phoneNumberId, accessToken: rawToken } = parsed.data;
 
     const { user } = await getWorkspaceMembershipOrThrow(workspaceId, ["owner", "admin"]);
     const rateLimit = await checkRateLimit(`test-connection:${user.id}:${workspaceId}`, 10, 60_000);
@@ -24,12 +25,22 @@ export async function POST(request: Request) {
       );
     }
 
+    const secrets = await getWorkspaceSecretsOrThrow(workspaceId);
+    const effectiveToken = rawToken?.trim() || secrets.accessToken;
+
+    if (!effectiveToken) {
+      return NextResponse.json(
+        { success: false, error: "Missing WhatsApp access token. Configure your access token or central META_ACCESS_TOKEN." },
+        { status: 400 }
+      );
+    }
+
     const url = `https://graph.facebook.com/v19.0/${phoneNumberId}`;
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${effectiveToken}`,
       },
     });
 

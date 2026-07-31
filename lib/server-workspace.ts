@@ -198,13 +198,23 @@ export async function getWorkspaceSecretsOrThrow(workspaceId: string) {
     throw new HttpError(404, 'Workspace not found');
   }
 
+  const decryptedAccessToken = decryptSecret(business.whatsapp_access_token_encrypted);
+  const decryptedAppSecret = decryptSecret(business.whatsapp_app_secret_encrypted);
+
+  const fallbackToken = process.env.META_ACCESS_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN || null;
+  const fallbackAppSecret = process.env.META_APP_SECRET || null;
+
+  const resolvedAccessToken = decryptedAccessToken || fallbackToken;
+  const resolvedAppSecret = decryptedAppSecret || fallbackAppSecret;
+
   return {
     id: business.id,
     whatsappNumberId: business.whatsapp_number_id,
-    accessToken: decryptSecret(business.whatsapp_access_token_encrypted),
-    accessTokenLast4: business.whatsapp_access_token_last4,
-    appSecret: decryptSecret(business.whatsapp_app_secret_encrypted),
-    appSecretLast4: business.whatsapp_app_secret_last4,
+    accessToken: resolvedAccessToken,
+    accessTokenLast4: business.whatsapp_access_token_last4 || (resolvedAccessToken ? last4(resolvedAccessToken) : null),
+    appSecret: resolvedAppSecret,
+    appSecretLast4: business.whatsapp_app_secret_last4 || (resolvedAppSecret ? last4(resolvedAppSecret) : null),
+    isCentralToken: !decryptedAccessToken && Boolean(fallbackToken),
     followUpEnabled: business.follow_up_enabled,
     followUpTemplateName: business.follow_up_template_name,
     followUpTemplateLanguageCode: business.follow_up_template_language_code,

@@ -29,7 +29,7 @@ export const testConnectionSchema = z.object({
     .string()
     .min(1, 'Phone Number ID is required')
     .regex(/^\d+$/, 'Phone Number ID must be numeric'),
-  accessToken: z.string().min(10, 'Access token is too short'),
+  accessToken: z.string().optional().nullable(),
 });
 
 // ── WhatsApp Config ─────────────────────────────────────────────────
